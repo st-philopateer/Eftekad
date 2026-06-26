@@ -8,11 +8,4 @@ git commit -m "Auto deploy update"
 Write-Host "🚀 Pushing to Hugging Face..." -ForegroundColor Cyan
 git push -f hf master:main
 
-# Deploy to GitHub (which triggers Railway)
-cd "d:\ghedma2.1"
-git add .
-git commit -m "Auto deploy update"
-Write-Host "🚀 Pushing to GitHub (Railway)..." -ForegroundColor Cyan
-git push origin main
-
-Write-Host "🎉 All sites updated successfully!" -ForegroundColor Green
+Write-Host "🎉 Hugging Face Space updated successfully!" -ForegroundColor Green
