@@ -4332,7 +4332,9 @@ window.onload = function() {
                 }
             });
             return best;
-function getDeadlineScopeLabel(dl) {
+        }
+
+        function getDeadlineScopeLabel(dl) {
             if (dl.scope === 'all') return 'كل الخدمات';
             if (dl.scope === 'osra') return 'أسرة: ' + dl.scopeValue;
             if (dl.scope === 'fasl') return 'فصل: ' + dl.scopeValue;
