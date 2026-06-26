@@ -983,11 +983,11 @@
             } else {
                 let isDlPassed = isCurrentDeadlinePassed();
                 myWaznat.forEach((w, index) => {
-                    let badgeClass = w.lastCallResult === 'رد' ? 'bg-success' : (w.lastCallResult === 'لم يرد' ? 'bg-warning text-dark' : ((w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد') ? 'bg-danger' : 'bg-secondary'));
+                    let badgeClass = w.lastCallResult === 'رد' ? 'bg-success' : (w.lastCallResult === 'لم يرد' ? 'bg-warning text-dark' : ((w.lastCallResult === 'الخادم لم يفتقد' || w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد') ? 'bg-danger' : 'bg-secondary'));
                                         let btnDisabled = isDlPassed ? 'disabled title="متأخر عن الديدلاين - لا يمكنك تسجيل الافتقاد"' : '';
                     let visitationDateText = (w.lastCallResult === 'رد' || w.lastCallResult === 'لم يرد') && w.timestamp 
                         ? formatArabicDateTime(w.timestamp) 
-                        : 'لم يفتقد بعد';
+                        : w.lastCallResult;
                     
                     tbody.innerHTML += `<tr>
                         <td>${index + 1}</td>
@@ -1232,10 +1232,10 @@
             waznat.forEach(w => {
                 if (w.servantUser === currServant.username) {
                     let isLate = w.lastCallResult === 'رد' && w.timestamp && (new Date(w.timestamp) >= deadlineTime);
-                    let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'لم يفتقد' && w.lastCallResult !== 'لم يفتقد بعد';
+                    let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'الخادم لم يفتقد' && w.lastCallResult !== 'لم يفتقد' && w.lastCallResult !== 'لم يفتقد بعد';
                     
                     if (isLate || isNotCompleted) {
-                        w.lastCallResult = 'لم يفتقد بعد';
+                        w.lastCallResult = 'الخادم لم يفتقد';
                         w.timestamp = new Date().toISOString();
                         changed = true;
                     }

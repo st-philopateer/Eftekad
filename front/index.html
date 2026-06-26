@@ -1263,7 +1263,7 @@
                 });
             }
 
-            let notVisitedWaznat = myWaznat.filter(w => w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد');
+            let notVisitedWaznat = myWaznat.filter(w => w.lastCallResult === 'الخادم لم يفتقد' || w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد');
             if (notVisitedWaznat.length > 0) {
                 let latestTime = new Date(Math.max(...notVisitedWaznat.map(w => new Date(w.timestamp || 0))));
                 let isUnread = latestTime > readTime;
@@ -2102,7 +2102,7 @@
                 filteredWaznat.forEach((w, index) => {
                     let visitationDateText = (w.lastCallResult === 'رد' || w.lastCallResult === 'لم يرد') && w.timestamp 
                         ? formatArabicDateTime(w.timestamp) 
-                        : 'لم يفتقد بعد';
+                        : w.lastCallResult;
                     
                     let srv = myServants.find(s => s.username === w.servantUser);
                     let servantNameText = srv ? (srv.fullName || srv.username) : w.servantUser;
@@ -2118,7 +2118,7 @@
                         <td class="text-secondary fw-bold">${waznaOsraText}</td>
                         <td class="small">${waznaFaslText}</td>
                         <td>
-<span class="badge ${w.lastCallResult === 'رد' ? 'bg-success' : w.lastCallResult === 'لم يرد' ? 'bg-warning text-dark' : (w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد') ? 'bg-danger' : 'bg-secondary'}">
+<span class="badge ${w.lastCallResult === 'رد' ? 'bg-success' : w.lastCallResult === 'لم يرد' ? 'bg-warning text-dark' : (w.lastCallResult === 'الخادم لم يفتقد' || w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد') ? 'bg-danger' : 'bg-secondary'}">
     ${w.lastCallResult}
 </span>
 
@@ -2583,10 +2583,10 @@
                         statusBadge = '<span class="badge bg-success">تم الرد</span>';
                     } else if (r.status === 'لم يرد') {
                         statusBadge = '<span class="badge bg-warning text-dark">لم يرد</span>';
-                    } else if (r.status === 'لم يفتقد بعد') {
-                        statusBadge = '<span class="badge bg-danger">لم يفتقد بعد</span>';
+                    } else if (r.status === 'الخادم لم يفتقد' || r.status === 'لم يفتقد' || r.status === 'لم يفتقد بعد') {
+                        statusBadge = '<span class="badge bg-danger">الخادم لم يفتقد</span>';
                     } else {
-                        statusBadge = '<span class="badge bg-danger">لم يفتقد</span>';
+                        statusBadge = `<span class="badge bg-secondary">${r.status || 'لم يتم الاتصال بعد'}</span>`;
                     }
                     return `
                         <tr>
@@ -2606,7 +2606,7 @@
         function renderReportCharts(rows) {
             const repliedCount = rows.filter(r => r.status === 'رد').length;
             const noReplyCount = rows.filter(r => r.status === 'لم يرد').length;
-            const notVisitedCount = rows.filter(r => r.status === 'لم يفتقد' || r.status === 'لم يفتقد بعد' || r.status === 'لم يتم الاتصال بعد').length;
+            const notVisitedCount = rows.filter(r => r.status === 'الخادم لم يفتقد' || r.status === 'لم يفتقد' || r.status === 'لم يفتقد بعد' || r.status === 'لم يتم الاتصال بعد').length;
 
             const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
             const textColor = isDark ? '#eee' : '#1e293b';
@@ -2621,7 +2621,7 @@
                 reportPieChartObj = new Chart(pieCtx, {
                     type: 'pie',
                     data: {
-                        labels: ['تم الرد', 'لم يرد', 'لم يفتقد بعد'],
+                        labels: ['تم الرد', 'لم يرد', 'الخادم لم يفتقد'],
                         datasets: [{
                             data: [repliedCount, noReplyCount, notVisitedCount],
                             backgroundColor: ['#2ec4b6', '#ff9f1c', '#e71d36'],
@@ -2650,7 +2650,7 @@
                 reportBarChartObj = new Chart(barCtx, {
                     type: 'bar',
                     data: {
-                        labels: ['تم الرد', 'لم يرد', 'لم يفتقد بعد'],
+                        labels: ['تم الرد', 'لم يرد', 'الخادم لم يفتقد'],
                         datasets: [{
                             label: 'العدد',
                             data: [repliedCount, noReplyCount, notVisitedCount],
@@ -2842,7 +2842,7 @@
                     // تطبيق فلترة الحالات بناءً على الحالة المستخرجة ديناميكياً
                     if (status === 'replied' && statusToUse !== 'رد') return;
                     if (status === 'no_reply' && statusToUse !== 'لم يرد') return;
-                    if (status === 'not_visited' && statusToUse !== 'لم يفتقد' && statusToUse !== 'لم يفتقد بعد' && statusToUse !== 'لم يتم الاتصال بعد') return;
+                    if (status === 'not_visited' && statusToUse !== 'الخادم لم يفتقد' && statusToUse !== 'لم يفتقد' && statusToUse !== 'لم يفتقد بعد' && statusToUse !== 'لم يتم الاتصال بعد') return;
 
                     processedWaznat.push({
                         wazna: w,
@@ -2871,7 +2871,7 @@
             const rows = getFilteredReportRows();
             const repliedCount = rows.filter(r => r.status === 'رد').length;
             const noReplyCount = rows.filter(r => r.status === 'لم يرد').length;
-            const notVisitedCount = rows.filter(r => r.status === 'لم يفتقد' || r.status === 'لم يفتقد بعد' || r.status === 'لم يتم الاتصال بعد').length;
+            const notVisitedCount = rows.filter(r => r.status === 'الخادم لم يفتقد' || r.status === 'لم يفتقد' || r.status === 'لم يفتقد بعد' || r.status === 'لم يتم الاتصال بعد').length;
 
             return {
                 title: `تقرير الافتقاد - ${curr ? curr.church : ''}`,
@@ -2880,7 +2880,7 @@
                 summary: [
                     ['تم الرد', repliedCount],
                     ['لم يرد', noReplyCount],
-                    ['لم يفتقد بعد', notVisitedCount]
+                    ['الخادم لم يفتقد', notVisitedCount]
                 ],
                 headers: ['المخدوم', 'الخادم', 'الأسرة', 'الفصل', 'حالة الافتقاد', 'تاريخ التحديث'],
                 rows: rows.map(r => [r.name, r.servantUser, r.osra, r.fasl, r.status, r.updatedAt])
@@ -4332,9 +4332,7 @@ window.onload = function() {
                 }
             });
             return best;
-        }
-
-        function getDeadlineScopeLabel(dl) {
+function getDeadlineScopeLabel(dl) {
             if (dl.scope === 'all') return 'كل الخدمات';
             if (dl.scope === 'osra') return 'أسرة: ' + dl.scopeValue;
             if (dl.scope === 'fasl') return 'فصل: ' + dl.scopeValue;
@@ -4485,10 +4483,10 @@ window.onload = function() {
                     waznat.forEach(w => {
                         if (w.servantUser === servant.username) {
                             let isLate = w.lastCallResult === 'رد' && w.timestamp && (new Date(w.timestamp) >= deadlineTime);
-                            let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'لم يفتقد' && w.lastCallResult !== 'لم يفتقد بعد';
+                            let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'الخادم لم يفتقد' && w.lastCallResult !== 'لم يفتقد' && w.lastCallResult !== 'لم يفتقد بعد';
                             
                             if (isLate || isNotCompleted) {
-                                w.lastCallResult = 'لم يفتقد بعد';
+                                w.lastCallResult = 'الخادم لم يفتقد';
                                 w.timestamp = new Date().toISOString();
                                 changed = true;
                             }
@@ -4519,7 +4517,7 @@ window.onload = function() {
             // الكود الجديد لحساب حالة لم يفتقد ضمن الإحصائيات
             let completed = myWaznat.filter(w => w.lastCallResult === 'رد').length;
             let uncompleted = myWaznat.filter(w => w.lastCallResult === 'لم يرد' || w.lastCallResult === 'إلغاء').length;
-            let missed = myWaznat.filter(w => w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد').length; // إضافة هذا السطر
+            let missed = myWaznat.filter(w => w.lastCallResult === 'الخادم لم يفتقد' || w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد').length; // إضافة هذا السطر
             let totalCalls = completed + uncompleted + missed; // تحديث الإجمالي
 
 
@@ -5874,7 +5872,7 @@ window.onload = function() {
         
         waznat.forEach(w => {
             if (myServantNames.includes(w.servantUser)) {
-                w.lastCallResult = 'لم يفتقد بعد';
+                w.lastCallResult = 'لم يتم الاتصال بعد';
                 w.timestamp = null;
             }
         });
