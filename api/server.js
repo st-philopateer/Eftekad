@@ -759,13 +759,21 @@ app.post('/api/priests/forgot-password', forgotPasswordRateLimiter, async (req, 
     });
   }
 
+  // Resolve the logo image absolute URL
+  const host = req.get('host') || 'st-makarios-eftekad.hf.space';
+  const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
+  const protocol = isSecure ? 'https' : 'http';
+  const logoUrl = host.includes('localhost') || host.includes('127.0.0.1')
+    ? 'https://st-makarios-eftekad.hf.space/logo-removebg-preview.png'
+    : `${protocol}://${host}/logo-removebg-preview.png`;
+
   // Prepare beautifully styled HTML template matching the dark theme of the login page
   const htmlContent = `
   <div style="direction: rtl; text-align: right; background-color: #060e22; padding: 40px 30px; font-family: 'Cairo', Tahoma, Arial, sans-serif; border-radius: 16px; max-width: 550px; margin: 0 auto; border: 2px solid #c9a84c; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);">
       <div style="text-align: center; margin-bottom: 30px;">
           <!-- Attached Church Logo -->
           <div style="display: inline-block; width: 90px; height: 90px; border-radius: 50%; border: 3px solid #c9a84c; background-color: #162654; padding: 8px;">
-              <img src="cid:logo" alt="شعار الكنيسة" style="width: 100%; height: 100%; object-fit: contain;">
+              <img src="${logoUrl}" alt="شعار الكنيسة" style="width: 100%; height: 100%; object-fit: contain;">
           </div>
           <h1 style="color: #f0d080; font-size: 24px; margin-top: 15px; font-weight: bold; margin-bottom: 5px;">استعادة كلمة المرور</h1>
       </div>
