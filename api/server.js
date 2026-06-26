@@ -760,12 +760,7 @@ app.post('/api/priests/forgot-password', forgotPasswordRateLimiter, async (req, 
   }
 
   // Resolve the logo image absolute URL
-  const host = req.get('host') || 'st-makarios-eftekad.hf.space';
-  const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
-  const protocol = isSecure ? 'https' : 'http';
-  const logoUrl = host.includes('localhost') || host.includes('127.0.0.1')
-    ? 'https://st-makarios-eftekad.hf.space/logo-removebg-preview.png'
-    : `${protocol}://${host}/logo-removebg-preview.png`;
+  const logoUrl = 'https://st-makarios-eftekad.hf.space/logo-removebg-preview.png';
 
   // Prepare beautifully styled HTML template matching the dark theme of the login page
   const htmlContent = `

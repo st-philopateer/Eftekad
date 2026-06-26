@@ -416,7 +416,7 @@
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label fw-bold small">واتساب الخادم</label>
+                            <label class="form-label fw-bold small">واتساب الخادم <span class="text-danger">*</span></label>
                             <input type="text" id="createServantWhatsapp" class="form-control auth-input py-2"
                                 placeholder="01xxxxxxxxx" dir="ltr">
                         </div>
@@ -589,6 +589,30 @@
                             </div>
                             <button class="btn btn-primary w-100 py-2 fw-bold" onclick="saveServantEdit()">حفظ
                                 التعديلات</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Change Servant Password Modal -->
+            <div class="modal fade" id="changeServantPasswordModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+                        <div class="modal-header border-0 pb-0">
+                            <h5 class="fw-bold text-primary">تغيير كلمة مرور الخادم</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4 text-start">
+                            <input type="hidden" id="changePassServantUsername">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small">الخادم</label>
+                                <input type="text" id="changePassServantDisplayName" class="form-control auth-input py-2" readonly style="background-color: rgba(0,0,0,0.03);">
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold small">كلمة المرور الجديدة <span class="text-danger">*</span></label>
+                                <input type="password" id="changePassNewPassword" class="form-control auth-input py-2" placeholder="أدخل كلمة المرور الجديدة">
+                            </div>
+                            <button class="btn btn-primary w-100 py-2 fw-bold" onclick="saveServantPasswordChange()">حفظ كلمة المرور</button>
                         </div>
                     </div>
                 </div>
@@ -1239,7 +1263,7 @@
                 });
             }
 
-            let notVisitedWaznat = myWaznat.filter(w => w.lastCallResult === 'لم يفتقد');
+            let notVisitedWaznat = myWaznat.filter(w => w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد');
             if (notVisitedWaznat.length > 0) {
                 let latestTime = new Date(Math.max(...notVisitedWaznat.map(w => new Date(w.timestamp || 0))));
                 let isUnread = latestTime > readTime;
@@ -1835,6 +1859,15 @@
                 return Promise.resolve(false);
             }
 
+            if (!whatsapp) {
+                if (!silent) {
+                    msg.className = "mt-3 fw-bold text-danger";
+                    msg.innerText = "الرجاء إدخال رقم واتساب الخادم!";
+                    msg.classList.remove('d-none');
+                }
+                return Promise.resolve(false);
+            }
+
             if (su && sp) {
                 let servants = JSON.parse(localStorage.getItem('servants') || '[]');
                 let curr = JSON.parse(localStorage.getItem('currentPriest'));
@@ -1893,16 +1926,42 @@
         }
 
         function editServantPassword(username) {
-            let newPass = prompt("أدخل كلمة المرور الجديدة للخادم " + username + ":");
-            if (newPass && newPass.trim() !== '') {
-                let servants = JSON.parse(localStorage.getItem('servants') || '[]');
-                let index = servants.findIndex(s => s.username === username);
-                if (index > -1) {
-                    servants[index].password = newPass.trim();
-                    localStorage.setItem('servants', JSON.stringify(servants));
-                    loadServantsTable();
-                    alert("تم تغيير كلمة المرور بنجاح.");
+            let servants = JSON.parse(localStorage.getItem('servants') || '[]');
+            let s = servants.find(srv => srv.username === username);
+            if (!s) return;
+            
+            document.getElementById('changePassServantUsername').value = username;
+            document.getElementById('changePassServantDisplayName').value = `${s.fullName || s.username} (${s.username})`;
+            document.getElementById('changePassNewPassword').value = '';
+            
+            let modal = new bootstrap.Modal(document.getElementById('changeServantPasswordModal'));
+            modal.show();
+        }
+
+        function saveServantPasswordChange() {
+            const username = document.getElementById('changePassServantUsername').value;
+            const newPass = document.getElementById('changePassNewPassword').value;
+            
+            if (!newPass || newPass.trim() === '') {
+                alert("الرجاء إدخال كلمة المرور الجديدة!");
+                return;
+            }
+            
+            let servants = JSON.parse(localStorage.getItem('servants') || '[]');
+            let index = servants.findIndex(s => s.username === username);
+            if (index > -1) {
+                servants[index].password = newPass.trim();
+                localStorage.setItem('servants', JSON.stringify(servants));
+                loadServantsTable();
+                
+                // Hide modal
+                let modalEl = document.getElementById('changeServantPasswordModal');
+                let modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) {
+                    modal.hide();
                 }
+                
+                alert("تم تغيير كلمة المرور بنجاح.");
             }
         }
 
@@ -2059,7 +2118,7 @@
                         <td class="text-secondary fw-bold">${waznaOsraText}</td>
                         <td class="small">${waznaFaslText}</td>
                         <td>
-<span class="badge ${w.lastCallResult === 'رد' ? 'bg-success' : w.lastCallResult === 'لم يرد' ? 'bg-warning text-dark' : w.lastCallResult === 'لم يفتقد' ? 'bg-danger' : 'bg-secondary'}">
+<span class="badge ${w.lastCallResult === 'رد' ? 'bg-success' : w.lastCallResult === 'لم يرد' ? 'bg-warning text-dark' : (w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد') ? 'bg-danger' : 'bg-secondary'}">
     ${w.lastCallResult}
 </span>
 
@@ -2523,6 +2582,8 @@
                         statusBadge = '<span class="badge bg-success">تم الرد</span>';
                     } else if (r.status === 'لم يرد') {
                         statusBadge = '<span class="badge bg-warning text-dark">لم يرد</span>';
+                    } else if (r.status === 'لم يفتقد بعد') {
+                        statusBadge = '<span class="badge bg-danger">لم يفتقد بعد</span>';
                     } else {
                         statusBadge = '<span class="badge bg-danger">لم يفتقد</span>';
                     }
@@ -2544,7 +2605,7 @@
         function renderReportCharts(rows) {
             const repliedCount = rows.filter(r => r.status === 'رد').length;
             const noReplyCount = rows.filter(r => r.status === 'لم يرد').length;
-            const notVisitedCount = rows.filter(r => r.status === 'لم يفتقد' || r.status === 'لم يتم الاتصال بعد').length;
+            const notVisitedCount = rows.filter(r => r.status === 'لم يفتقد' || r.status === 'لم يفتقد بعد' || r.status === 'لم يتم الاتصال بعد').length;
 
             const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
             const textColor = isDark ? '#eee' : '#1e293b';
@@ -2559,7 +2620,7 @@
                 reportPieChartObj = new Chart(pieCtx, {
                     type: 'pie',
                     data: {
-                        labels: ['تم الرد', 'لم يرد', 'لم يفتقد'],
+                        labels: ['تم الرد', 'لم يرد', 'لم يفتقد بعد'],
                         datasets: [{
                             data: [repliedCount, noReplyCount, notVisitedCount],
                             backgroundColor: ['#2ec4b6', '#ff9f1c', '#e71d36'],
@@ -2588,7 +2649,7 @@
                 reportBarChartObj = new Chart(barCtx, {
                     type: 'bar',
                     data: {
-                        labels: ['تم الرد', 'لم يرد', 'لم يفتقد'],
+                        labels: ['تم الرد', 'لم يرد', 'لم يفتقد بعد'],
                         datasets: [{
                             label: 'العدد',
                             data: [repliedCount, noReplyCount, notVisitedCount],
@@ -2774,7 +2835,7 @@
                     // تطبيق فلترة الحالات بناءً على الحالة المستخرجة ديناميكياً
                     if (status === 'replied' && statusToUse !== 'رد') return;
                     if (status === 'no_reply' && statusToUse !== 'لم يرد') return;
-                    if (status === 'not_visited' && statusToUse !== 'لم يفتقد' && statusToUse !== 'لم يتم الاتصال بعد') return;
+                    if (status === 'not_visited' && statusToUse !== 'لم يفتقد' && statusToUse !== 'لم يفتقد بعد' && statusToUse !== 'لم يتم الاتصال بعد') return;
 
                     processedWaznat.push({
                         wazna: w,
@@ -2803,7 +2864,7 @@
             const rows = getFilteredReportRows();
             const repliedCount = rows.filter(r => r.status === 'رد').length;
             const noReplyCount = rows.filter(r => r.status === 'لم يرد').length;
-            const notVisitedCount = rows.filter(r => r.status === 'لم يفتقد' || r.status === 'لم يتم الاتصال بعد').length;
+            const notVisitedCount = rows.filter(r => r.status === 'لم يفتقد' || r.status === 'لم يفتقد بعد' || r.status === 'لم يتم الاتصال بعد').length;
 
             return {
                 title: `تقرير الافتقاد - ${curr ? curr.church : ''}`,
@@ -2812,7 +2873,7 @@
                 summary: [
                     ['تم الرد', repliedCount],
                     ['لم يرد', noReplyCount],
-                    ['لم يفتقد', notVisitedCount]
+                    ['لم يفتقد بعد', notVisitedCount]
                 ],
                 headers: ['المخدوم', 'الخادم', 'الأسرة', 'الفصل', 'حالة الافتقاد', 'تاريخ التحديث'],
                 rows: rows.map(r => [r.name, r.servantUser, r.osra, r.fasl, r.status, r.updatedAt])
@@ -4417,10 +4478,10 @@ window.onload = function() {
                     waznat.forEach(w => {
                         if (w.servantUser === servant.username) {
                             let isLate = w.lastCallResult === 'رد' && w.timestamp && (new Date(w.timestamp) >= deadlineTime);
-                            let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'لم يفتقد';
+                            let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'لم يفتقد' && w.lastCallResult !== 'لم يفتقد بعد';
                             
                             if (isLate || isNotCompleted) {
-                                w.lastCallResult = 'لم يفتقد';
+                                w.lastCallResult = 'لم يفتقد بعد';
                                 w.timestamp = new Date().toISOString();
                                 changed = true;
                             }
@@ -4451,7 +4512,7 @@ window.onload = function() {
             // الكود الجديد لحساب حالة لم يفتقد ضمن الإحصائيات
             let completed = myWaznat.filter(w => w.lastCallResult === 'رد').length;
             let uncompleted = myWaznat.filter(w => w.lastCallResult === 'لم يرد' || w.lastCallResult === 'إلغاء').length;
-            let missed = myWaznat.filter(w => w.lastCallResult === 'لم يفتقد').length; // إضافة هذا السطر
+            let missed = myWaznat.filter(w => w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد').length; // إضافة هذا السطر
             let totalCalls = completed + uncompleted + missed; // تحديث الإجمالي
 
 
@@ -4466,29 +4527,7 @@ window.onload = function() {
             document.getElementById('statUncompletedCount').innerText = uncompleted;
             document.getElementById('statPercentage').innerText = percentage + '%';
 
-            if (barChart) {
-                let osras = getPriestServices();
-                let osraNames = osras.map(o => o.name);
-                if (osraNames.length === 0) osraNames = ['عام'];
-
-                let osraRates = [];
-                osraNames.forEach(name => {
-                    let waznatInOsra = myWaznat.filter(w => {
-                        if (name === 'عام') {
-                            return !w.osra || w.osra === 'عام';
-                        }
-                        return w.osra === name;
-                    });
-                    let total = waznatInOsra.length;
-                    let completed = waznatInOsra.filter(w => w.lastCallResult === 'رد').length;
-                    let rate = total > 0 ? Math.round((completed / total) * 100) : 0;
-                    osraRates.push(rate);
-                });
-
-                barChart.data.labels = osraNames;
-                barChart.data.datasets[0].data = osraRates;
-                barChart.update();
-            }
+            initCharts();
         }
 
         function switchTab(tabId, el) {
@@ -4584,13 +4623,18 @@ window.onload = function() {
         let barChart;
 
         function initCharts() {
-            if (barChart) return;
+            const barCanvas = document.getElementById('barChart');
+            if (!barCanvas) return;
+            if (barChart) {
+                barChart.destroy();
+            }
             const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
             const textColor = isDark ? '#eee' : '#1e293b';
             const barColor = isDark ? '#f0d080' : '#4f46e5';
             const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
 
             let curr = JSON.parse(localStorage.getItem('currentPriest'));
+            if (!curr) return;
             let allServants = JSON.parse(localStorage.getItem('servants') || '[]');
             let myServantUsernames = allServants.filter(s => s.priestUser === curr.username).map(s => s.username);
 
@@ -4616,7 +4660,7 @@ window.onload = function() {
                 osraRates.push(rate);
             });
 
-            const barCtx = document.getElementById('barChart').getContext('2d');
+            const barCtx = barCanvas.getContext('2d');
             barChart = new Chart(barCtx, {
                 type: 'bar',
                 data: {
@@ -5730,7 +5774,7 @@ window.onload = function() {
         
         waznat.forEach(w => {
             if (myServantNames.includes(w.servantUser)) {
-                w.lastCallResult = 'لم يفتقد';
+                w.lastCallResult = 'لم يفتقد بعد';
                 w.timestamp = null;
             }
         });
