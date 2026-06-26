@@ -4650,11 +4650,14 @@ window.onload = function() {
             osraNames.forEach(name => {
                 let waznatInOsra = myWaznat.filter(w => {
                     let srv = allServants.find(s => s.username === w.servantUser);
-                    let waznaOsra = w.osra || (srv ? srv.osra : 'عام');
-                    if (name === 'عام') {
-                        return !waznaOsra || waznaOsra === 'عام';
+                    if (w.osra) {
+                        return w.osra === name;
+                    } else if (srv && srv.osra) {
+                        let srvOsras = srv.osra.split(',').map(o => o.trim()).filter(Boolean);
+                        return srvOsras.includes(name);
+                    } else {
+                        return name === 'عام';
                     }
-                    return waznaOsra === name;
                 });
                 let total = waznatInOsra.length;
                 let completed = waznatInOsra.filter(w => w.lastCallResult === 'رد').length;
@@ -4672,7 +4675,8 @@ window.onload = function() {
                         data: osraRates,
                         backgroundColor: barColor,
                         borderRadius: 5,
-                        barPercentage: 0.6
+                        barPercentage: 0.6,
+                        maxBarThickness: 35
                     }]
                 },
                 options: {
