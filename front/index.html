@@ -362,7 +362,7 @@
                     <div class="col-md-8">
                         <div class="card p-4 h-100">
                             <h6 class="fw-bold mb-4 text-primary">إحصائيات الافتقاد</h6>
-                            <div style="position: relative; height: 260px; width: 100%;">
+                            <div style="position: relative; height: 190px; width: 100%;">
                                 <canvas id="barChart"></canvas>
                             </div>
                         </div>
@@ -576,10 +576,10 @@
                         <div class="modal-body p-4 text-start">
                             <input type="hidden" id="editServantUsername">
                             <div class="mb-3">
-                                <label class="form-label fw-bold">الأسرة</label>
-                                <select id="editServantOsraSelect" class="form-select auth-input py-2" onchange="populateEditServantFasls()">
-                                    <option value="عام">عام</option>
-                                </select>
+                                <label class="form-label fw-bold d-block">الأسرة (يمكن اختيار أكثر من أسرة)</label>
+                                <div id="editServantOsrasContainer" class="p-3 border rounded" style="max-height: 180px; overflow-y: auto;">
+                                    <!-- Checkboxes will be populated here -->
+                                </div>
                             </div>
                             <div class="mb-4">
                                 <label class="form-label fw-bold">الفصل</label>
@@ -2356,7 +2356,8 @@
                 const servants = JSON.parse(localStorage.getItem('servants') || '[]');
                 const servant = servants.find(s => s.username === scopeVal);
                 if (servant && servant.osra) {
-                    const osra = osras.find(o => o.name === servant.osra);
+                    const servantOsrasList = servant.osra.split(',').map(o => o.trim()).filter(Boolean);
+                    const osra = osras.find(o => servantOsrasList.includes(o.name));
                     if (osra && osra.serviceDay) return osra.serviceDay;
                 }
             }
@@ -2755,7 +2756,10 @@
 
             if (status === 'servants_not_visited') {
                 let filteredServants = myServants.filter(servant => {
-                    if (scope === 'osra' && scopeVal && servant.osra !== scopeVal) return false;
+                    if (scope === 'osra' && scopeVal) {
+                        let servantOsrasList = servant.osra ? servant.osra.split(',').map(o => o.trim()) : [];
+                        if (!servantOsrasList.includes(scopeVal)) return false;
+                    }
                     if (scope === 'fasl' && scopeVal && servant.fasl !== scopeVal) return false;
                     if (scope === 'servant' && scopeVal && servant.username !== scopeVal) return false;
 
@@ -2797,7 +2801,10 @@
                     let servant = myServants.find(s => s.username === w.servantUser);
                     if (!servant) return;
 
-                    if (scope === 'osra' && scopeVal && servant.osra !== scopeVal) return;
+                    if (scope === 'osra' && scopeVal) {
+                        let servantOsrasList = servant.osra ? servant.osra.split(',').map(o => o.trim()) : [];
+                        if (!servantOsrasList.includes(scopeVal)) return;
+                    }
                     if (scope === 'fasl' && scopeVal && servant.fasl !== scopeVal) return;
                     if (scope === 'servant' && scopeVal && servant.username !== scopeVal) return;
 
@@ -4316,7 +4323,7 @@ window.onload = function() {
             deadlineList.forEach(dl => {
                 let matches = false;
                 if (dl.scope === 'all') matches = true;
-                else if (dl.scope === 'osra' && servant.osra === dl.scopeValue) matches = true;
+                else if (dl.scope === 'osra' && servant.osra && servant.osra.split(',').map(o => o.trim()).includes(dl.scopeValue)) matches = true;
                 else if (dl.scope === 'fasl' && servant.fasl === dl.scopeValue) matches = true;
                 else if (dl.scope === 'servant' && servant.username === dl.scopeValue) matches = true;
                 if (matches && priorities[dl.scope] > bestPriority) {
@@ -4344,7 +4351,7 @@ window.onload = function() {
             if (scope === 'all') {
                 targetServants = myServants.map(s => s.username);
             } else if (scope === 'osra') {
-                targetServants = myServants.filter(s => s.osra === scopeValue).map(s => s.username);
+                targetServants = myServants.filter(s => s.osra && s.osra.split(',').map(o => o.trim()).includes(scopeValue)).map(s => s.username);
             } else if (scope === 'fasl') {
                 targetServants = myServants.filter(s => s.fasl === scopeValue).map(s => s.username);
             } else if (scope === 'servant') {
@@ -4674,9 +4681,7 @@ window.onload = function() {
                         label: 'نسبة الافتقاد',
                         data: osraRates,
                         backgroundColor: barColor,
-                        borderRadius: 5,
-                        barPercentage: 0.6,
-                        maxBarThickness: 35
+                        borderRadius: 5
                     }]
                 },
                 options: {
@@ -4803,10 +4808,14 @@ window.onload = function() {
                 let servants = JSON.parse(localStorage.getItem('servants') || '[]');
                 let updated = false;
                 servants.forEach(s => {
-                    if (s.osra === osraName) {
-                        s.osra = 'عام';
-                        s.fasl = 'عام';
-                        updated = true;
+                    if (s.osra) {
+                        let list = s.osra.split(',').map(o => o.trim()).filter(Boolean);
+                        if (list.includes(osraName)) {
+                            list = list.filter(o => o !== osraName);
+                            s.osra = list.join(', ') || 'عام';
+                            s.fasl = 'عام';
+                            updated = true;
+                        }
                     }
                 });
                 if (updated) {
@@ -4868,7 +4877,14 @@ window.onload = function() {
             if (newName !== osraName) {
                 let servants = JSON.parse(localStorage.getItem('servants') || '[]');
                 servants.forEach(s => {
-                    if (s.osra === osraName) s.osra = newName;
+                    if (s.osra) {
+                        let list = s.osra.split(',').map(o => o.trim()).filter(Boolean);
+                        let idx = list.indexOf(osraName);
+                        if (idx > -1) {
+                            list[idx] = newName;
+                            s.osra = list.join(', ');
+                        }
+                    }
                 });
                 localStorage.setItem('servants', JSON.stringify(servants));
 
@@ -4913,7 +4929,7 @@ window.onload = function() {
                     let servants = JSON.parse(localStorage.getItem('servants') || '[]');
                     let updated = false;
                     servants.forEach(s => {
-                        if (s.osra === osraName && s.fasl === faslName) {
+                        if (s.osra && s.osra.split(',').map(o => o.trim()).includes(osraName) && s.fasl === faslName) {
                             s.fasl = 'عام';
                             updated = true;
                         }
@@ -5120,33 +5136,75 @@ window.onload = function() {
         function openEditServantModal(username, currentOsra, currentFasl) {
             document.getElementById('editServantUsername').value = username;
 
-            let select = document.getElementById('editServantOsraSelect');
-            let osras = getPriestServices();
-            select.innerHTML = '';
-            
-            let optPlaceholder = document.createElement('option');
-            optPlaceholder.value = '';
-            optPlaceholder.innerText = 'اختر الأسرة';
-            select.appendChild(optPlaceholder);
+            let container = document.getElementById('editServantOsrasContainer');
+            if (container) {
+                container.innerHTML = '';
+                let osras = getPriestServices();
+                
+                // Add 'عام' option as checkbox
+                let divGeneral = document.createElement('div');
+                divGeneral.className = 'form-check mb-2';
+                let inputGeneral = document.createElement('input');
+                inputGeneral.type = 'checkbox';
+                inputGeneral.className = 'form-check-input edit-osra-checkbox';
+                inputGeneral.value = 'عام';
+                inputGeneral.id = 'editOsra_General';
+                inputGeneral.onchange = () => {
+                    if (inputGeneral.checked) {
+                        // Uncheck all other checkboxes
+                        document.querySelectorAll('.edit-osra-checkbox').forEach(cb => {
+                            if (cb.id !== 'editOsra_General') cb.checked = false;
+                        });
+                    }
+                    populateEditServantFasls();
+                };
+                
+                let labelGeneral = document.createElement('label');
+                labelGeneral.className = 'form-check-label ms-2';
+                labelGeneral.htmlFor = 'editOsra_General';
+                labelGeneral.innerText = 'عام';
+                divGeneral.appendChild(inputGeneral);
+                divGeneral.appendChild(labelGeneral);
+                container.appendChild(divGeneral);
 
-            let optGeneral = document.createElement('option');
-            optGeneral.value = 'عام';
-            optGeneral.innerText = 'عام';
-            select.appendChild(optGeneral);
+                // Split current osras by comma
+                let currentOsrasList = currentOsra ? currentOsra.split(',').map(o => o.trim()).filter(Boolean) : ['عام'];
+                if (currentOsrasList.length === 0) currentOsrasList = ['عام'];
 
-            osras.forEach(o => {
-                let opt = document.createElement('option');
-                opt.value = o.name;
-                opt.innerText = o.name;
-                select.appendChild(opt);
-            });
+                if (currentOsrasList.includes('عام')) {
+                    inputGeneral.checked = true;
+                }
 
-            const osraValueToSet = currentOsra || 'عام';
-            const optionExists = Array.from(select.options).some(opt => opt.value === osraValueToSet);
-            if (optionExists) {
-                select.value = osraValueToSet;
-            } else {
-                select.value = 'عام';
+                osras.forEach((o, i) => {
+                    let div = document.createElement('div');
+                    div.className = 'form-check mb-2';
+                    
+                    let input = document.createElement('input');
+                    input.type = 'checkbox';
+                    input.className = 'form-check-input edit-osra-checkbox';
+                    input.value = o.name;
+                    input.id = 'editOsra_' + i;
+                    input.onchange = () => {
+                        if (input.checked) {
+                            // Uncheck General checkbox
+                            let cbGen = document.getElementById('editOsra_General');
+                            if (cbGen) cbGen.checked = false;
+                        }
+                        populateEditServantFasls();
+                    };
+                    if (currentOsrasList.includes(o.name)) {
+                        input.checked = true;
+                    }
+
+                    let label = document.createElement('label');
+                    label.className = 'form-check-label ms-2';
+                    label.htmlFor = 'editOsra_' + i;
+                    label.innerText = o.name;
+
+                    div.appendChild(input);
+                    div.appendChild(label);
+                    container.appendChild(div);
+                });
             }
 
             populateEditServantFasls(currentFasl);
@@ -5157,28 +5215,62 @@ window.onload = function() {
 
         function populateEditServantFasls(currentFasl = null) {
             let faslSelect = document.getElementById('editServantFasl');
+            if (!faslSelect) return;
+            
+            // If currentFasl is an event object, override to null
+            if (currentFasl && currentFasl.target) currentFasl = null;
+
+            // Preserve current selection if no explicit currentFasl is provided
+            if (!currentFasl) {
+                currentFasl = faslSelect.value;
+            }
+
             let osras = getPriestServices();
             faslSelect.innerHTML = '<option value="">اختر الفصل</option>';
 
-            let selectedOsra = document.getElementById('editServantOsraSelect').value;
+            // Collect all selected osras from the checkboxes
+            let checkboxes = document.querySelectorAll('.edit-osra-checkbox:checked');
+            let selectedOsras = Array.from(checkboxes).map(cb => cb.value);
 
-            if (selectedOsra && selectedOsra !== 'عام') {
-                let osra = osras.find(o => o.name === selectedOsra);
-                if (osra && osra.fasls) {
-                    osra.fasls.forEach(f => {
-                        let opt = document.createElement('option');
-                        opt.value = f;
-                        opt.innerText = f;
-                        if (f === currentFasl) opt.selected = true;
-                        faslSelect.appendChild(opt);
-                    });
+            if (selectedOsras.length > 0) {
+                // If "عام" is selected, add "عام" option
+                if (selectedOsras.includes('عام')) {
+                    let opt = document.createElement('option');
+                    opt.value = 'عام';
+                    opt.innerText = 'عام';
+                    if (currentFasl === 'عام') opt.selected = true;
+                    faslSelect.appendChild(opt);
                 }
+
+                // Collect all classes for selected osras
+                selectedOsras.forEach(selectedOsra => {
+                    if (selectedOsra !== 'عام') {
+                        let osra = osras.find(o => o.name === selectedOsra);
+                        if (osra && osra.fasls) {
+                            osra.fasls.forEach(f => {
+                                // Prevent adding duplicate class names
+                                if (!Array.from(faslSelect.options).some(opt => opt.value === f)) {
+                                    let opt = document.createElement('option');
+                                    opt.value = f;
+                                    opt.innerText = f;
+                                    if (f === currentFasl) opt.selected = true;
+                                    faslSelect.appendChild(opt);
+                                }
+                            });
+                        }
+                    }
+                });
             }
         }
 
         function saveServantEdit() {
             let username = document.getElementById('editServantUsername').value;
-            let osra = document.getElementById('editServantOsraSelect').value || 'عام';
+            
+            // Collect all selected osras from checkboxes
+            let checkboxes = document.querySelectorAll('.edit-osra-checkbox:checked');
+            let osraList = Array.from(checkboxes).map(cb => cb.value);
+            let osra = osraList.join(', ') || 'عام';
+            
             let fasl = document.getElementById('editServantFasl').value || 'عام';
 
             let servants = JSON.parse(localStorage.getItem('servants') || '[]');
@@ -5191,7 +5283,9 @@ window.onload = function() {
 
                 var myModalEl = document.getElementById('editServantModal');
                 var modal = bootstrap.Modal.getInstance(myModalEl);
-                modal.hide();
+                if (modal) {
+                    modal.hide();
+                }
             }
         }
 
