@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ghedma-cache-v39';
+const CACHE_NAME = 'ghedma-cache-v40';
 const ASSETS = [
   '/',
   '/priest',
@@ -8,6 +8,7 @@ const ASSETS = [
   '/socket-client.js',
   '/logo-removebg-preview.png',
   '/Untitled-1.png',
+  '/chart.js',
   '/manifest.json',
   '/manifest-servant.json'
 ];

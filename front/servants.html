@@ -1372,7 +1372,7 @@
             if (dl && dl.datetime) {
                 let dlTime = new Date(dl.datetime);
                 if (dlTime > new Date()) {
-                    let isUnread = dlTime > readTime;
+                    let isUnread = dl.id > readTime.getTime();
                     items.push({
                         type: 'warning',
                         text: `الديدلاين القادم: ${formatArabicDateTime(dl.datetime)}`,
@@ -1380,7 +1380,7 @@
                         timestamp: dlTime
                     });
                 } else if (!dl.applied) {
-                    let isUnread = dlTime > readTime;
+                    let isUnread = dl.id > readTime.getTime();
                     items.push({
                         type: 'danger',
                         text: `انتهى الديدلاين في: ${formatArabicDateTime(dl.datetime)}`,
