@@ -4649,10 +4649,12 @@ window.onload = function() {
             let osraRates = [];
             osraNames.forEach(name => {
                 let waznatInOsra = myWaznat.filter(w => {
+                    let srv = allServants.find(s => s.username === w.servantUser);
+                    let waznaOsra = w.osra || (srv ? srv.osra : 'عام');
                     if (name === 'عام') {
-                        return !w.osra || w.osra === 'عام';
+                        return !waznaOsra || waznaOsra === 'عام';
                     }
-                    return w.osra === name;
+                    return waznaOsra === name;
                 });
                 let total = waznatInOsra.length;
                 let completed = waznatInOsra.filter(w => w.lastCallResult === 'رد').length;
