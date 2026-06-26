@@ -252,26 +252,133 @@ async function ensureDb(req, res, next) {
       }
       const now = Date.now();
       if (!dbMemory || (now - lastFetchTime > CACHE_TTL)) {
-        const doc = await mongoDb.collection(COLLECTION_NAME).findOne({ _id: 'state' });
-        if (doc) {
-          dbMemory = doc.data;
-          if (!dbMemory._versions) {
-            dbMemory._versions = {
-              priests: 1,
-              servants: 1,
-              waznat: 1,
-              priestServices: 1,
-              deadlines: 1,
-              chat_messages: 1
-            };
+        // Load collections from MongoDB in parallel
+        let [priests, servants, waznat, priestServices, deadlines, chat_messages, email_logs, snapshots] = await Promise.all([
+          mongoDb.collection('priests users').find().toArray(),
+          mongoDb.collection('servants users').find().toArray(),
+          mongoDb.collection('waznat').find().toArray(),
+          mongoDb.collection('priestServices').find().toArray(),
+          mongoDb.collection('deadlines').find().toArray(),
+          mongoDb.collection('Messages').find().toArray(),
+          mongoDb.collection('email_logs').find().toArray(),
+          mongoDb.collection('snapshots').find().toArray()
+        ]);
+
+        let migratedAny = false;
+
+        // Migrate priests if 'priests users' is empty but old 'priests' has data
+        if (priests.length === 0) {
+          const oldPriests = await mongoDb.collection('priests').find().toArray();
+          if (oldPriests.length > 0) {
+            console.log("🚚 Migrating data from old 'priests' to new 'priests users'...");
+            const cleanPriests = oldPriests.map(d => { const copy = { ...d }; delete copy._id; return copy; });
+            await mongoDb.collection('priests users').insertMany(cleanPriests);
+            priests = await mongoDb.collection('priests users').find().toArray();
+            migratedAny = true;
           }
-          lastFetchTime = now;
-        } else {
-          // Initialize state if not found
-          await mongoDb.collection(COLLECTION_NAME).insertOne({ _id: 'state', data: defaultDb });
-          dbMemory = defaultDb;
-          lastFetchTime = now;
         }
+
+        // Migrate servants if 'servants users' is empty but old 'servants' has data
+        if (servants.length === 0) {
+          const oldServants = await mongoDb.collection('servants').find().toArray();
+          if (oldServants.length > 0) {
+            console.log("🚚 Migrating data from old 'servants' to new 'servants users'...");
+            const cleanServants = oldServants.map(d => { const copy = { ...d }; delete copy._id; return copy; });
+            await mongoDb.collection('servants users').insertMany(cleanServants);
+            servants = await mongoDb.collection('servants users').find().toArray();
+            migratedAny = true;
+          }
+        }
+
+        // Migrate chat messages if 'Messages' is empty but old 'chat_messages' has data
+        if (chat_messages.length === 0) {
+          const oldMessages = await mongoDb.collection('chat_messages').find().toArray();
+          if (oldMessages.length > 0) {
+            console.log("🚚 Migrating data from old 'chat_messages' to new 'Messages'...");
+            const cleanMessages = oldMessages.map(d => { const copy = { ...d }; delete copy._id; return copy; });
+            await mongoDb.collection('Messages').insertMany(cleanMessages);
+            chat_messages = await mongoDb.collection('Messages').find().toArray();
+            migratedAny = true;
+          }
+        }
+
+        // If they are all empty, check if we need to migrate from the old 'system_store' single-document collection
+        if (priests.length === 0 && servants.length === 0 && waznat.length === 0) {
+          const oldState = await mongoDb.collection('system_store').findOne({ _id: 'state' });
+          if (oldState && oldState.data) {
+            console.log("🚚 Migrating data from old 'system_store' to separate collections...");
+            const d = oldState.data;
+            const migrations = [];
+            if (d.priests && d.priests.length > 0) migrations.push(mongoDb.collection('priests users').insertMany(d.priests.map(x => { const copy = { ...x }; delete copy._id; return copy; })));
+            if (d.servants && d.servants.length > 0) migrations.push(mongoDb.collection('servants users').insertMany(d.servants.map(x => { const copy = { ...x }; delete copy._id; return copy; })));
+            if (d.waznat && d.waznat.length > 0) migrations.push(mongoDb.collection('waznat').insertMany(d.waznat.map(x => { const copy = { ...x }; delete copy._id; return copy; })));
+            if (d.priestServices && d.priestServices.length > 0) migrations.push(mongoDb.collection('priestServices').insertMany(d.priestServices.map(x => { const copy = { ...x }; delete copy._id; return copy; })));
+            
+            if (d.deadlines && Array.isArray(d.deadlines) && d.deadlines.length > 0) {
+              migrations.push(mongoDb.collection('deadlines').insertMany(d.deadlines.map(x => { const copy = { ...x }; delete copy._id; return copy; })));
+            } else if (d.deadlines && typeof d.deadlines === 'object' && Object.keys(d.deadlines).length > 0) {
+              const dlArray = Object.keys(d.deadlines).map(pu => ({ priestUser: pu, list: d.deadlines[pu] }));
+              if (dlArray.length > 0) migrations.push(mongoDb.collection('deadlines').insertMany(dlArray));
+            }
+            
+            if (d.chat_messages && d.chat_messages.length > 0) migrations.push(mongoDb.collection('Messages').insertMany(d.chat_messages.map(x => { const copy = { ...x }; delete copy._id; return copy; })));
+            if (d.email_logs && d.email_logs.length > 0) migrations.push(mongoDb.collection('email_logs').insertMany(d.email_logs.map(x => { const copy = { ...x }; delete copy._id; return copy; })));
+            if (d.snapshots && d.snapshots.length > 0) migrations.push(mongoDb.collection('snapshots').insertMany(d.snapshots.map(x => { const copy = { ...x }; delete copy._id; return copy; })));
+
+            if (migrations.length > 0) {
+              await Promise.all(migrations);
+              console.log("✅ Migration from system_store completed successfully!");
+              dbMemory = null;
+              return ensureDb(req, res, next);
+            }
+          }
+        }
+
+        // Map deadlines array to a map { priestUser: [...] }
+        const deadlinesMap = {};
+        deadlines.forEach(doc => {
+          if (doc.priestUser) {
+            deadlinesMap[doc.priestUser] = doc.list || [];
+          } else if (doc._id === 'deadlines_map' && doc.data) {
+            Object.assign(deadlinesMap, doc.data);
+          }
+        });
+
+        // Initialize versions
+        let versions = {
+          priests: 1,
+          servants: 1,
+          waznat: 1,
+          priestServices: 1,
+          deadlines: 1,
+          chat_messages: 1
+        };
+        const versionsDoc = await mongoDb.collection('meta').findOne({ _id: 'versions' });
+        if (versionsDoc && versionsDoc.data) {
+          versions = versionsDoc.data;
+        }
+
+        const stripId = arr => {
+          if (!Array.isArray(arr)) return [];
+          return arr.map(doc => {
+            const copy = { ...doc };
+            delete copy._id;
+            return copy;
+          });
+        };
+
+        dbMemory = {
+          priests: stripId(priests),
+          servants: stripId(servants),
+          waznat: stripId(waznat),
+          priestServices: stripId(priestServices),
+          deadlines: deadlinesMap,
+          chat_messages: stripId(chat_messages),
+          email_logs: stripId(email_logs),
+          snapshots: stripId(snapshots),
+          _versions: versions
+        };
+        lastFetchTime = now;
       }
     } catch (e) {
       console.error("❌ MongoDB connection or fetch failed in middleware:", e);
@@ -292,53 +399,107 @@ function readDb() {
   return dbMemory;
 }
 
-async function writeDb(data, changedKey) {
-if (!data._versions) {
-data._versions = {
-priests: 1,
-servants: 1,
-waznat: 1,
-priestServices: 1,deadlines: 1,
-chat_messages: 1
-};
-}
-if (changedKey) {
-data._versions[changedKey] = (data._versions[changedKey] || 0) + 1;
-}
-dbMemory = data;
-lastFetchTime = Date.now();
-if (useMongo && mongoDb) {
-try {
-await mongoDb.collection(COLLECTION_NAME).updateOne(
-{ _id: 'state' },
-{ $set: { data: dbMemory } },
-{ upsert: true }
-);
-} catch (err) {
-console.error("❌ Error writing to MongoDB:", err);
-}
-} else {
-try {
-fs.writeFileSync(DB_FILE, JSON.stringify(dbMemory, null, 2), 'utf8');
-} catch (err) {
-console.error("❌ Error writing JSON database locally:", err);
-}
-}
-if (changedKey) {
-  io.emit('data-changed', { versions: data._versions, changedKey, data: data[changedKey] });
+async function syncCollection(colName, array) {
+  try {
+    await mongoDb.collection(colName).deleteMany({});
+    if (Array.isArray(array) && array.length > 0) {
+      const cleanArray = array.map(item => {
+        const copy = { ...item };
+        delete copy._id;
+        return copy;
+      });
+      await mongoDb.collection(colName).insertMany(cleanArray);
+    }
+  } catch (err) {
+    console.error(`Error syncing collection ${colName} to Mongo:`, err);
+  }
 }
 
+async function syncDeadlines(deadlinesMap) {
+  try {
+    await mongoDb.collection('deadlines').deleteMany({});
+    const array = [];
+    Object.keys(deadlinesMap).forEach(priestUser => {
+      array.push({
+        priestUser: priestUser,
+        list: deadlinesMap[priestUser]
+      });
+    });
+    if (array.length > 0) {
+      await mongoDb.collection('deadlines').insertMany(array);
+    }
+  } catch (err) {
+    console.error("Error syncing deadlines to Mongo:", err);
+  }
+}
+
+async function writeDb(data, changedKey) {
+  if (!data._versions) {
+    data._versions = {
+      priests: 1,
+      servants: 1,
+      waznat: 1,
+      priestServices: 1,
+      deadlines: 1,
+      chat_messages: 1
+    };
+  }
+  if (changedKey) {
+    data._versions[changedKey] = (data._versions[changedKey] || 0) + 1;
+  }
+  dbMemory = data;
+  lastFetchTime = Date.now();
+
+  if (useMongo && mongoDb) {
+    try {
+      if (!changedKey) {
+        await Promise.all([
+          syncCollection('priests users', dbMemory.priests),
+          syncCollection('servants users', dbMemory.servants),
+          syncCollection('waznat', dbMemory.waznat),
+          syncCollection('priestServices', dbMemory.priestServices),
+          syncDeadlines(dbMemory.deadlines),
+          syncCollection('Messages', dbMemory.chat_messages),
+          mongoDb.collection('meta').updateOne({ _id: 'versions' }, { $set: { data: dbMemory._versions } }, { upsert: true })
+        ]);
+      } else {
+        if (changedKey === 'priests') await syncCollection('priests users', dbMemory.priests);
+        else if (changedKey === 'servants') await syncCollection('servants users', dbMemory.servants);
+        else if (changedKey === 'waznat') await syncCollection('waznat', dbMemory.waznat);
+        else if (changedKey === 'priestServices') await syncCollection('priestServices', dbMemory.priestServices);
+        else if (changedKey === 'chat_messages') await syncCollection('Messages', dbMemory.chat_messages);
+        else if (changedKey === 'deadlines') await syncDeadlines(dbMemory.deadlines);
+        
+        await mongoDb.collection('meta').updateOne({ _id: 'versions' }, { $set: { data: dbMemory._versions } }, { upsert: true });
+      }
+    } catch (err) {
+      console.error("❌ Error writing to MongoDB:", err);
+    }
+  } else {
+    try {
+      fs.writeFileSync(DB_FILE, JSON.stringify(dbMemory, null, 2), 'utf8');
+    } catch (err) {
+      console.error("❌ Error writing JSON database locally:", err);
+    }
+  }
+  if (changedKey) {
+    io.emit('data-changed', { versions: data._versions, changedKey, data: data[changedKey] });
+  }
 }
 
 // Flush DB Synchronously on shutdown
 async function flushDbSync() {
   try {
     if (useMongo && mongoDb && mongoClient) {
-      await mongoDb.collection(COLLECTION_NAME).updateOne(
-        { _id: 'state' },
-        { $set: { data: dbMemory } },
-        { upsert: true }
-      );
+      await Promise.all([
+        syncCollection('priests users', dbMemory.priests),
+        syncCollection('servants users', dbMemory.servants),
+        syncCollection('waznat', dbMemory.waznat),
+        syncCollection('priestServices', dbMemory.priestServices),
+        syncDeadlines(dbMemory.deadlines),
+        syncCollection('Messages', dbMemory.chat_messages),
+        mongoDb.collection('meta').updateOne({ _id: 'versions' }, { $set: { data: dbMemory._versions } }, { upsert: true })
+      ]);
       await mongoClient.close();
       console.log("💾 Database successfully flushed to MongoDB Atlas and connection closed.");
     } else {
@@ -591,7 +752,10 @@ app.post('/api/priests/forgot-password', forgotPasswordRateLimiter, async (req, 
       },
       tls: {
         rejectUnauthorized: false // avoids SSL/TLS handshake connection issues on cloud hosting providers
-      }
+      },
+      connectionTimeout: 5000, // 5 seconds
+      greetingTimeout: 5000,
+      socketTimeout: 5000
     });
   }
 
@@ -647,33 +811,31 @@ app.post('/api/priests/forgot-password', forgotPasswordRateLimiter, async (req, 
     });
   }
 
-  // Return success immediately to client so they see instantaneous feedback
-  res.json({ success: true });
-
   if (brevoApiKey) {
-    // Send the email in the background asynchronously via Brevo HTTP API
-    fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'accept': 'application/json',
-        'api-key': brevoApiKey,
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify({
-        sender: {
-          name: "أسرة الأنبا مكاريوس",
-          email: emailUser
+    // Send the email synchronously via Brevo HTTP API
+    try {
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': brevoApiKey,
+          'content-type': 'application/json'
         },
-        to: [{ email: email }],
-        subject: 'سلام ونعمة يا ابونا - استعادة كلمة المرور',
-        htmlContent: htmlContent
-      })
-    })
-    .then(async response => {
+        body: JSON.stringify({
+          sender: {
+            name: "أسرة الأنبا مكاريوس",
+            email: emailUser
+          },
+          to: [{ email: email }],
+          subject: 'سلام ونعمة يا ابونا - استعادة كلمة المرور',
+          htmlContent: htmlContent
+        })
+      });
+      
       const resBody = await response.json();
       if (response.ok) {
         console.log("==========================================");
-        console.log("📧 Recovery Email Sent Successfully via Brevo (HTTP Async)!");
+        console.log("📧 Recovery Email Sent Successfully via Brevo (HTTP Sync)!");
         console.log("Recipient:", email);
         console.log("Message ID:", resBody.messageId);
         console.log("==========================================");
@@ -689,17 +851,17 @@ app.post('/api/priests/forgot-password', forgotPasswordRateLimiter, async (req, 
             messageId: resBody.messageId
           });
           if (db.email_logs.length > 50) db.email_logs.shift();
-          writeDb(db, 'email_logs').catch(e => console.error("Error writing email logs:", e));
+          await writeDb(db, 'email_logs');
         } catch (err) {
           console.error("Error updating email_logs in DB:", err);
         }
+        return res.json({ success: true });
       } else {
         throw new Error(resBody.message || JSON.stringify(resBody));
       }
-    })
-    .catch(error => {
+    } catch (error) {
       console.error("==========================================");
-      console.error("❌ Error sending recovery email via Brevo (HTTP Async):", error);
+      console.error("❌ Error sending recovery email via Brevo (HTTP Sync):", error);
       console.error("==========================================");
 
       try {
@@ -713,61 +875,63 @@ app.post('/api/priests/forgot-password', forgotPasswordRateLimiter, async (req, 
           error: error.message || String(error)
         });
         if (db.email_logs.length > 50) db.email_logs.shift();
-        writeDb(db, 'email_logs').catch(e => console.error("Error writing email logs:", e));
+        await writeDb(db, 'email_logs');
       } catch (err) {
         console.error("Error updating email_logs in DB:", err);
       }
-    });
+      return res.status(500).json({ success: false, message: "فشل إرسال البريد الإلكتروني: " + (error.message || "حدث خطأ غير معروف.") });
+    }
   } else if (transporter) {
-    // Send the email in the background asynchronously via SMTP
-    transporter.sendMail(mailOptions)
-      .then(info => {
-        console.log("==========================================");
-        console.log("📧 Recovery Email Sent Successfully (SMTP Async)!");
-        console.log("Recipient:", email);
-        console.log("SMTP Response:", info.response);
-        console.log("Message ID:", info.messageId);
-        console.log("==========================================");
+    // Send the email synchronously via SMTP
+    try {
+      const info = await transporter.sendMail(mailOptions);
+      console.log("==========================================");
+      console.log("📧 Recovery Email Sent Successfully (SMTP Sync)!");
+      console.log("Recipient:", email);
+      console.log("SMTP Response:", info.response);
+      console.log("Message ID:", info.messageId);
+      console.log("==========================================");
 
-        try {
-          const db = readDb();
-          if (!db.email_logs) db.email_logs = [];
-          db.email_logs.push({
-            timestamp: new Date().toISOString(),
-            recipient: email,
-            success: true,
-            method: 'SMTP',
-            response: info.response,
-            messageId: info.messageId
-          });
-          if (db.email_logs.length > 50) db.email_logs.shift();
-          writeDb(db, 'email_logs').catch(e => console.error("Error writing email logs:", e));
-        } catch (err) {
-          console.error("Error updating email_logs in DB:", err);
-        }
-      })
-      .catch(error => {
-        console.error("==========================================");
-        console.error("❌ Error sending recovery email (SMTP Async):", error);
-        console.error("==========================================");
+      try {
+        const db = readDb();
+        if (!db.email_logs) db.email_logs = [];
+        db.email_logs.push({
+          timestamp: new Date().toISOString(),
+          recipient: email,
+          success: true,
+          method: 'SMTP',
+          response: info.response,
+          messageId: info.messageId
+        });
+        if (db.email_logs.length > 50) db.email_logs.shift();
+        await writeDb(db, 'email_logs');
+      } catch (err) {
+        console.error("Error updating email_logs in DB:", err);
+      }
+      return res.json({ success: true });
+    } catch (error) {
+      console.error("==========================================");
+      console.error("❌ Error sending recovery email (SMTP Sync):", error);
+      console.error("==========================================");
 
-        try {
-          const db = readDb();
-          if (!db.email_logs) db.email_logs = [];
-          db.email_logs.push({
-            timestamp: new Date().toISOString(),
-            recipient: email,
-            success: false,
-            method: 'SMTP',
-            error: error.message || String(error),
-            stack: error.stack
-          });
-          if (db.email_logs.length > 50) db.email_logs.shift();
-          writeDb(db, 'email_logs').catch(e => console.error("Error writing email logs:", e));
-        } catch (err) {
-          console.error("Error updating email_logs in DB:", err);
-        }
-      });
+      try {
+        const db = readDb();
+        if (!db.email_logs) db.email_logs = [];
+        db.email_logs.push({
+          timestamp: new Date().toISOString(),
+          recipient: email,
+          success: false,
+          method: 'SMTP',
+          error: error.message || String(error),
+          stack: error.stack
+        });
+        if (db.email_logs.length > 50) db.email_logs.shift();
+        await writeDb(db, 'email_logs');
+      } catch (err) {
+        console.error("Error updating email_logs in DB:", err);
+      }
+      return res.status(500).json({ success: false, message: "فشل إرسال البريد الإلكتروني عبر SMTP: " + (error.message || "انتهت مهلة الاتصال.") });
+    }
   }
 });
 

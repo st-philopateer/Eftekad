@@ -362,7 +362,9 @@
                     <div class="col-md-8">
                         <div class="card p-4 h-100">
                             <h6 class="fw-bold mb-4 text-primary">إحصائيات الافتقاد</h6>
-                            <canvas id="barChart" height="100"></canvas>
+                            <div style="position: relative; height: 260px; width: 100%;">
+                                <canvas id="barChart"></canvas>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -1354,6 +1356,10 @@
         }
 
         function logout() {
+            if (barChart) {
+                barChart.destroy();
+                barChart = null;
+            }
             localStorage.removeItem('currentPriest');
             localStorage.removeItem('activeTabPriest');
             document.getElementById('priestUser').value = '';
@@ -4625,6 +4631,7 @@ window.onload = function() {
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: { 
                         legend: { display: false },
                         tooltip: {
@@ -5234,6 +5241,7 @@ window.onload = function() {
                 loadFaslsUI();
                 populateServantDropdown();
                 populateWaznatFilterOsraDropdown();
+                updateDashboardStats();
             }
             if (key === 'priestServices') {
                 loadServicesUI();
