@@ -1,0 +1,28 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/server.js"
+    },
+    {
+      "source": "/sw.js",
+      "destination": "/front/sw.js"
+    },
+    {
+      "source": "/manifest.json",
+      "destination": "/front/manifest.json"
+    },
+    {
+      "source": "/manifest-servant.json",
+      "destination": "/front/manifest-servant.json"
+    },
+    {
+      "source": "/",
+      "destination": "/front/index.html"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/front/:path*"
+    }
+  ]
+}

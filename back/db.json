@@ -1,0 +1,246 @@
+{
+  "priests": [
+    {
+      "church": "كنيسة مارجرجس",
+      "name": "ابونا ميخائيل",
+      "email": "andrewnour9@gmail.com",
+      "username": "ابونا ميخائيل",
+      "password": "123456",
+      "profilePic": "data:image/jpeg;base64,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"
+    },
+    {
+      "church": "كنيسة مارجرجس",
+      "name": "ابونا كاراس",
+      "email": "samuelsafwat700@gmail.com",
+      "username": "ابونا كاراس",
+      "password": "123456789",
+      "profilePic": null
+    }
+  ],
+  "servants": [
+    {
+      "username": "اندرو نور",
+      "fullName": "اندرو نور فؤاد",
+      "password": "123456",
+      "priestUser": "ابونا ميخائيل",
+      "osra": "اسرة مارمينا",
+      "fasl": "مارجرجس",
+      "whatsapp": "01274414372",
+      "lastActive": "2026-06-16T09:14:09.773Z",
+      "profilePic": null
+    },
+    {
+      "username": "صموئيل صفوت",
+      "fullName": "صموئيل صفوت",
+      "password": "123456",
+      "priestUser": "ابونا ميخائيل",
+      "osra": "اسرة مارمينا",
+      "fasl": "مارجرجس",
+      "whatsapp": "01274414372"
+    }
+  ],
+  "waznat": [
+    {
+      "id": 1781557666173,
+      "servantUser": "اندرو نور",
+      "name": "بيتر نور",
+      "phone": "01274414372",
+      "birthDate": "2001-03-21",
+      "age": "25",
+      "address": "",
+      "notes": "",
+      "lastCallResult": "رد",
+      "timestamp": "2026-06-15T21:08:21.997Z"
+    }
+  ],
+  "priestServices": [
+    {
+      "priestUser": "ابونا ميخائيل",
+      "osras": [
+        {
+          "name": "اسرة مارمينا",
+          "fasls": [
+            "مارجرجس"
+          ]
+        }
+      ]
+    },
+    {
+      "priestUser": "ابونا كاراس",
+      "osras": []
+    }
+  ],
+  "deadlines": {
+    "ابونا ميخائيل": [
+      {
+        "id": 1781557685507,
+        "scope": "servant",
+        "scopeValue": "اندرو نور",
+        "datetime": "2026-06-16T00:09",
+        "applied": true
+      },
+      {
+        "id": 1781599618878,
+        "scope": "all",
+        "scopeValue": "",
+        "datetime": "2026-06-16T11:47",
+        "applied": false
+      }
+    ]
+  },
+  "chat_messages": [
+    {
+      "id": 1781547896705,
+      "chatId": "all_ابونا ميخائيل",
+      "sender": "ابونا ميخائيل",
+      "senderType": "priest",
+      "content": "hello",
+      "timestamp": "2026-06-15T18:24:56.705Z",
+      "isRead": true
+    },
+    {
+      "id": 1781552202565,
+      "chatId": "servant_اندرو نور_ابونا ميخائيل",
+      "sender": "اندرو نور",
+      "senderType": "servant",
+      "content": "hello",
+      "timestamp": "2026-06-15T19:36:42.565Z",
+      "isRead": true
+    },
+    {
+      "id": 1781552237405,
+      "chatId": "servant_اندرو نور_ابونا ميخائيل",
+      "sender": "ابونا ميخائيل",
+      "senderType": "priest",
+      "content": "hello",
+      "timestamp": "2026-06-15T19:37:17.405Z",
+      "isRead": true
+    },
+    {
+      "id": 1781553498668,
+      "chatId": "servant_اندرو نور_ابونا ميخائيل",
+      "sender": "ابونا ميخائيل",
+      "senderType": "priest",
+      "content": "hello",
+      "timestamp": "2026-06-15T19:58:18.668Z",
+      "isRead": true
+    },
+    {
+      "id": 1781553512443,
+      "chatId": "servant_اندرو نور_ابونا ميخائيل",
+      "sender": "اندرو نور",
+      "senderType": "servant",
+      "content": "hello",
+      "timestamp": "2026-06-15T19:58:32.443Z",
+      "isRead": true
+    },
+    {
+      "id": 1781553524635,
+      "chatId": "servant_اندرو نور_ابونا ميخائيل",
+      "sender": "ابونا ميخائيل",
+      "senderType": "priest",
+      "content": "hello",
+      "timestamp": "2026-06-15T19:58:44.635Z",
+      "isRead": true
+    },
+    {
+      "id": 1781553578611,
+      "chatId": "osra_اسرة مارمينا_ابونا ميخائيل",
+      "sender": "ابونا ميخائيل",
+      "senderType": "priest",
+      "content": "hello",
+      "timestamp": "2026-06-15T19:59:38.611Z",
+      "isRead": true
+    },
+    {
+      "id": 1781553966804,
+      "chatId": "servant_اندرو نور_ابونا ميخائيل",
+      "sender": "اندرو نور",
+      "senderType": "servant",
+      "content": "hello",
+      "timestamp": "2026-06-15T20:06:06.804Z",
+      "isRead": true
+    },
+    {
+      "id": 1781553976046,
+      "chatId": "servant_اندرو نور_ابونا ميخائيل",
+      "sender": "اندرو نور",
+      "senderType": "servant",
+      "content": "h",
+      "timestamp": "2026-06-15T20:06:16.046Z",
+      "isRead": true
+    },
+    {
+      "id": 1781554002085,
+      "chatId": "servant_اندرو نور_ابونا ميخائيل",
+      "sender": "اندرو نور",
+      "senderType": "servant",
+      "content": "ازيك",
+      "timestamp": "2026-06-15T20:06:42.085Z",
+      "isRead": true
+    },
+    {
+      "id": 1781557444926,
+      "chatId": "servant_اندرو نور_ابونا ميخائيل",
+      "sender": "اندرو نور",
+      "senderType": "servant",
+      "content": "ازيك",
+      "timestamp": "2026-06-15T21:04:04.927Z",
+      "isRead": true
+    },
+    {
+      "id": 1781557459326,
+      "chatId": "servant_اندرو نور_ابونا ميخائيل",
+      "sender": "اندرو نور",
+      "senderType": "servant",
+      "content": "hello",
+      "timestamp": "2026-06-15T21:04:19.326Z",
+      "isRead": true
+    },
+    {
+      "id": 1781559297135,
+      "chatId": "servant_اندرو نور_ابونا ميخائيل",
+      "sender": "اندرو نور",
+      "senderType": "servant",
+      "content": "هلا",
+      "timestamp": "2026-06-15T21:34:57.135Z",
+      "isRead": true
+    },
+    {
+      "id": 1781559319423,
+      "chatId": "servant_اندرو نور_ابونا ميخائيل",
+      "sender": "اندرو نور",
+      "senderType": "servant",
+      "content": "اهلا",
+      "timestamp": "2026-06-15T21:35:19.423Z",
+      "isRead": true
+    },
+    {
+      "id": 1781559324879,
+      "chatId": "servant_اندرو نور_ابونا ميخائيل",
+      "sender": "اندرو نور",
+      "senderType": "servant",
+      "content": ".",
+      "timestamp": "2026-06-15T21:35:24.879Z",
+      "isRead": true
+    },
+    {
+      "id": 1781560286900,
+      "chatId": "servant_اندرو نور_ابونا ميخائيل",
+      "sender": "اندرو نور",
+      "senderType": "servant",
+      "content": "ازيك",
+      "timestamp": "2026-06-15T21:51:26.900Z",
+      "isRead": true
+    },
+    {
+      "id": 1781560350945,
+      "chatId": "servant_اندرو نور_ابونا ميخائيل",
+      "sender": "اندرو نور",
+      "senderType": "servant",
+      "content": "هالو",
+      "timestamp": "2026-06-15T21:52:30.945Z",
+      "isRead": true
+    }
+  ]
+}

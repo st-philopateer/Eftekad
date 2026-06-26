@@ -1,0 +1,17 @@
+{
+  "name": "ghedma-system",
+  "version": "1.0.0",
+  "description": "Visitation and Servants Management System for St. Makarios",
+  "main": "api/server.js",
+  "scripts": {
+    "start": "node api/server.js",
+    "dev": "node api/server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "mongodb": "^7.3.0",
+    "nodemailer": "^6.9.3",
+    "socket.io": "^4.8.3"
+  }
+}
