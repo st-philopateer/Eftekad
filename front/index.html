@@ -2439,22 +2439,15 @@
                     valueSelect.innerHTML += `<option value="week:${w.start}:${w.end}">${w.label}</option>`;
                 });
                 generateReport();
-            } else if (type === 'monthly') {
-                yearWrap.classList.add('scope-select-hidden');
-                monthWrap.classList.remove('scope-select-hidden');
-                valueWrap.classList.remove('scope-select-hidden');
-                
-                const months = getMonthsList();
-                monthSelect.innerHTML = '';
-                months.forEach(m => {
-                    monthSelect.innerHTML += `<option value="${m.year}:${m.month}">${m.label}</option>`;
-                });
-                
-                handleReportMonthChange();
-            } else if (type === 'yearly') {
+            } else if (type === 'monthly' || type === 'yearly') {
                 yearWrap.classList.remove('scope-select-hidden');
                 monthWrap.classList.remove('scope-select-hidden');
-                valueWrap.classList.remove('scope-select-hidden');
+                
+                if (type === 'monthly') {
+                    valueWrap.classList.remove('scope-select-hidden');
+                } else {
+                    valueWrap.classList.add('scope-select-hidden');
+                }
                 
                 const years = getYearsList();
                 yearSelect.innerHTML = '';
@@ -2467,6 +2460,7 @@
         }
 
         function handleReportYearChange() {
+            const type = document.getElementById('reportPeriodType').value;
             const year = document.getElementById('reportYearSelect').value;
             const monthSelect = document.getElementById('reportMonthSelect');
             if (!year) return;
@@ -2476,7 +2470,11 @@
                 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
             ];
             
-            monthSelect.innerHTML = '<option value="all_months">تقرير مجمع لجميع شهور السنة</option>';
+            monthSelect.innerHTML = '';
+            if (type === 'yearly') {
+                monthSelect.innerHTML = '<option value="all_months">تقرير مجمع لجميع شهور السنة</option>';
+            }
+            
             for (let m = 0; m < 12; m++) {
                 monthSelect.innerHTML += `<option value="${year}:${m + 1}">${arabicMonths[m]} ${year}</option>`;
             }
@@ -2861,7 +2859,7 @@
         function renderReportCharts(rows) {
             const repliedCount = rows.filter(r => r.status === 'رد').length;
             const noReplyCount = rows.filter(r => r.status === 'لم يرد').length;
-            const notVisitedCount = rows.filter(r => r.status === 'لم يفتقد' || r.status === 'لم يتم الاتصال بعد').length;
+            const notVisitedCount = rows.filter(r => r.status !== 'رد' && r.status !== 'لم يرد').length;
 
             const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
             const textColor = isDark ? '#eee' : '#1e293b';
