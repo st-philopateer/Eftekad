@@ -362,7 +362,7 @@
                     <div class="col-md-8">
                         <div class="card p-4 h-100">
                             <h6 class="fw-bold mb-4 text-primary">إحصائيات الافتقاد</h6>
-                            <div style="position: relative; height: 190px; width: 100%;">
+                            <div style="position: relative; height: 260px; width: 100%;">
                                 <canvas id="barChart"></canvas>
                             </div>
                         </div>
@@ -416,7 +416,7 @@
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label fw-bold small">واتساب الخادم <span class="text-danger">*</span></label>
+                            <label class="form-label fw-bold small">واتساب الخادم</label>
                             <input type="text" id="createServantWhatsapp" class="form-control auth-input py-2"
                                 placeholder="01xxxxxxxxx" dir="ltr">
                         </div>
@@ -432,17 +432,11 @@
                 <div class="card p-4 fade-in mt-4">
                     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
                         <h5 class="fw-bold mb-0 text-primary">الخدام</h5>
-                        <div class="d-flex align-items-center gap-3 flex-wrap">
-                            <div class="d-flex align-items-center gap-2">
-                                <label class="form-label mb-0 fw-bold small text-nowrap">بحث:</label>
-                                <input type="text" id="searchServantsInput" class="form-control form-control-sm auth-input py-1" placeholder="بحث بالاسم أو الحساب..." oninput="loadServantsTable()" style="max-width: 180px;">
-                            </div>
-                            <div class="d-flex align-items-center gap-2" style="min-width: 200px;">
-                                <label class="form-label mb-0 fw-bold small text-nowrap">تصفية حسب الأسرة:</label>
-                                <select id="filterServantsByOsra" class="form-select form-select-sm auth-input py-1" onchange="loadServantsTable()">
-                                    <option value="all">الكل (جميع الأسر)</option>
-                                </select>
-                            </div>
+                        <div class="d-flex align-items-center gap-2" style="min-width: 250px;">
+                            <label class="form-label mb-0 fw-bold small text-nowrap">تصفية حسب الأسرة:</label>
+                            <select id="filterServantsByOsra" class="form-select form-select-sm auth-input py-1" onchange="loadServantsTable()">
+                                <option value="all">الكل (جميع الأسر)</option>
+                            </select>
                         </div>
                     </div>
                     <div class="table-responsive">
@@ -582,40 +576,19 @@
                         <div class="modal-body p-4 text-start">
                             <input type="hidden" id="editServantUsername">
                             <div class="mb-3">
-                                <label class="form-label fw-bold d-block">الأسرة (يمكن اختيار أكثر من أسرة)</label>
-                                <div id="editServantOsrasContainer" class="p-3 border rounded" style="max-height: 180px; overflow-y: auto;">
-                                    <!-- Checkboxes will be populated here -->
-                                </div>
+                                <label class="form-label fw-bold">الأسرة</label>
+                                <select id="editServantOsraSelect" class="form-select auth-input py-2" onchange="populateEditServantFasls()">
+                                    <option value="عام">عام</option>
+                                </select>
                             </div>
-                            <div class="mb-4" id="editServantFaslsContainer">
-                                <!-- Dynamic classes selects will be generated here -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">الفصل</label>
+                                <select id="editServantFasl" class="form-select auth-input py-2">
+                                    <option value="">اختر الفصل</option>
+                                </select>
                             </div>
                             <button class="btn btn-primary w-100 py-2 fw-bold" onclick="saveServantEdit()">حفظ
                                 التعديلات</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Change Servant Password Modal -->
-            <div class="modal fade" id="changeServantPasswordModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
-                        <div class="modal-header border-0 pb-0">
-                            <h5 class="fw-bold text-primary">تغيير كلمة مرور الخادم</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body p-4 text-start">
-                            <input type="hidden" id="changePassServantUsername">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold small">الخادم</label>
-                                <input type="text" id="changePassServantDisplayName" class="form-control auth-input py-2" readonly style="background-color: rgba(0,0,0,0.03);">
-                            </div>
-                            <div class="mb-4">
-                                <label class="form-label fw-bold small">كلمة المرور الجديدة <span class="text-danger">*</span></label>
-                                <input type="password" id="changePassNewPassword" class="form-control auth-input py-2" placeholder="أدخل كلمة المرور الجديدة">
-                            </div>
-                            <button class="btn btn-primary w-100 py-2 fw-bold" onclick="saveServantPasswordChange()">حفظ كلمة المرور</button>
                         </div>
                     </div>
                 </div>
@@ -695,10 +668,6 @@
                                 <option value="fasl">فصل محدد</option>
                                 <option value="servant">خادم محدد</option>
                             </select>
-                        </div>
-                        <div class="col-md-3 scope-select-hidden" id="deadlineScopeOsraWrap">
-                            <label class="form-label fw-bold">اختر الأسرة</label>
-                            <select id="deadlineScopeOsra" class="form-select auth-input" onchange="updateDeadlineFaslOrServantOptions()"></select>
                         </div>
                         <div class="col-md-3" id="deadlineScopeValueWrap">
                             <label class="form-label fw-bold">تحديد النطاق</label>
@@ -1280,7 +1249,7 @@
                 });
             }
 
-            let notVisitedWaznat = myWaznat.filter(w => w.lastCallResult === 'الخادم لم يفتقد' || w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد');
+            let notVisitedWaznat = myWaznat.filter(w => w.lastCallResult === 'لم يفتقد');
             if (notVisitedWaznat.length > 0) {
                 let latestTime = new Date(Math.max(...notVisitedWaznat.map(w => new Date(w.timestamp || 0))));
                 let isUnread = latestTime > readTime;
@@ -1876,15 +1845,6 @@
                 return Promise.resolve(false);
             }
 
-            if (!whatsapp) {
-                if (!silent) {
-                    msg.className = "mt-3 fw-bold text-danger";
-                    msg.innerText = "الرجاء إدخال رقم واتساب الخادم!";
-                    msg.classList.remove('d-none');
-                }
-                return Promise.resolve(false);
-            }
-
             if (su && sp) {
                 let servants = JSON.parse(localStorage.getItem('servants') || '[]');
                 let curr = JSON.parse(localStorage.getItem('currentPriest'));
@@ -1943,42 +1903,16 @@
         }
 
         function editServantPassword(username) {
-            let servants = JSON.parse(localStorage.getItem('servants') || '[]');
-            let s = servants.find(srv => srv.username === username);
-            if (!s) return;
-            
-            document.getElementById('changePassServantUsername').value = username;
-            document.getElementById('changePassServantDisplayName').value = `${s.fullName || s.username} (${s.username})`;
-            document.getElementById('changePassNewPassword').value = '';
-            
-            let modal = new bootstrap.Modal(document.getElementById('changeServantPasswordModal'));
-            modal.show();
-        }
-
-        function saveServantPasswordChange() {
-            const username = document.getElementById('changePassServantUsername').value;
-            const newPass = document.getElementById('changePassNewPassword').value;
-            
-            if (!newPass || newPass.trim() === '') {
-                alert("الرجاء إدخال كلمة المرور الجديدة!");
-                return;
-            }
-            
-            let servants = JSON.parse(localStorage.getItem('servants') || '[]');
-            let index = servants.findIndex(s => s.username === username);
-            if (index > -1) {
-                servants[index].password = newPass.trim();
-                localStorage.setItem('servants', JSON.stringify(servants));
-                loadServantsTable();
-                
-                // Hide modal
-                let modalEl = document.getElementById('changeServantPasswordModal');
-                let modal = bootstrap.Modal.getInstance(modalEl);
-                if (modal) {
-                    modal.hide();
+            let newPass = prompt("أدخل كلمة المرور الجديدة للخادم " + username + ":");
+            if (newPass && newPass.trim() !== '') {
+                let servants = JSON.parse(localStorage.getItem('servants') || '[]');
+                let index = servants.findIndex(s => s.username === username);
+                if (index > -1) {
+                    servants[index].password = newPass.trim();
+                    localStorage.setItem('servants', JSON.stringify(servants));
+                    loadServantsTable();
+                    alert("تم تغيير كلمة المرور بنجاح.");
                 }
-                
-                alert("تم تغيير كلمة المرور بنجاح.");
             }
         }
 
@@ -1989,7 +1923,6 @@
     let myServants = allServants.filter(s => s.priestUser === curr.username);
 
     let filterSelect = document.getElementById('filterServantsByOsra');
-    let searchInput = document.getElementById('searchServantsInput');
     let tbody = document.getElementById('servantsTableBody');
     tbody.innerHTML = '';
 
@@ -1997,21 +1930,12 @@
     if (!filterOsra) {
         filterOsra = 'all';
     }
-    let query = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
     let filteredServants = myServants;
     if (filterOsra !== 'all') {
         filteredServants = myServants.filter(s => {
             if (!s.osra) return false;
             return s.osra.split(',').map(o => o.trim()).includes(filterOsra);
-        });
-    }
-
-    if (query) {
-        filteredServants = filteredServants.filter(s => {
-            let name = (s.fullName || '').toLowerCase();
-            let username = (s.username || '').toLowerCase();
-            return name.includes(query) || username.includes(query);
         });
     }
 
@@ -2109,7 +2033,7 @@
                     if (filterValue) {
                         filteredWaznat = filteredWaznat.filter(w => {
                             let srv = myServants.find(s => s.username === w.servantUser);
-                            return srv && srv.fasl && srv.fasl.split(',').map(f => f.trim()).includes(filterValue);
+                            return srv && srv.fasl === filterValue;
                         });
                     }
                 } else if (filterType === 'servant') {
@@ -2129,7 +2053,7 @@
                 filteredWaznat.forEach((w, index) => {
                     let visitationDateText = (w.lastCallResult === 'رد' || w.lastCallResult === 'لم يرد') && w.timestamp 
                         ? formatArabicDateTime(w.timestamp) 
-                        : w.lastCallResult;
+                        : 'لم يفتقد بعد';
                     
                     let srv = myServants.find(s => s.username === w.servantUser);
                     let servantNameText = srv ? (srv.fullName || srv.username) : w.servantUser;
@@ -2145,7 +2069,7 @@
                         <td class="text-secondary fw-bold">${waznaOsraText}</td>
                         <td class="small">${waznaFaslText}</td>
                         <td>
-<span class="badge ${w.lastCallResult === 'رد' ? 'bg-success' : w.lastCallResult === 'لم يرد' ? 'bg-warning text-dark' : (w.lastCallResult === 'الخادم لم يفتقد' || w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد') ? 'bg-danger' : 'bg-secondary'}">
+<span class="badge ${w.lastCallResult === 'رد' ? 'bg-success' : w.lastCallResult === 'لم يرد' ? 'bg-warning text-dark' : w.lastCallResult === 'لم يفتقد' ? 'bg-danger' : 'bg-secondary'}">
     ${w.lastCallResult}
 </span>
 
@@ -2383,8 +2307,7 @@
                 const servants = JSON.parse(localStorage.getItem('servants') || '[]');
                 const servant = servants.find(s => s.username === scopeVal);
                 if (servant && servant.osra) {
-                    const servantOsrasList = servant.osra.split(',').map(o => o.trim()).filter(Boolean);
-                    const osra = osras.find(o => servantOsrasList.includes(o.name));
+                    const osra = osras.find(o => o.name === servant.osra);
                     if (osra && osra.serviceDay) return osra.serviceDay;
                 }
             }
@@ -2553,7 +2476,7 @@
                 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
             ];
             
-            monthSelect.innerHTML = '';
+            monthSelect.innerHTML = '<option value="all_months">تقرير مجمع لجميع شهور السنة</option>';
             for (let m = 0; m < 12; m++) {
                 monthSelect.innerHTML += `<option value="${year}:${m + 1}">${arabicMonths[m]} ${year}</option>`;
             }
@@ -2564,15 +2487,24 @@
         function handleReportMonthChange() {
             const monthVal = document.getElementById('reportMonthSelect').value;
             const valueSelect = document.getElementById('reportPeriodValue');
+            const valueWrap = document.getElementById('reportPeriodValueWrap');
             if (!monthVal) return;
 
+            if (monthVal === 'all_months') {
+                valueWrap.classList.add('scope-select-hidden');
+                valueSelect.innerHTML = '';
+                generateReport();
+                return;
+            }
+
+            valueWrap.classList.remove('scope-select-hidden');
             const [year, month] = monthVal.split(':').map(Number);
             const serviceDay = getSelectedServiceDay();
             const weeks = getWeeksForMonth(year, month, serviceDay);
 
-            valueSelect.innerHTML = '';
+            valueSelect.innerHTML = '<option value="all_weeks">تقرير مجمع لجميع أسابيع الشهر</option>';
             if (weeks.length === 0) {
-                valueSelect.innerHTML = '<option value="">لا توجد أسابيع</option>';
+                // Keep the option
             } else {
                 weeks.forEach(w => {
                     valueSelect.innerHTML += `<option value="week:${w.start}:${w.end}">${w.label}</option>`;
@@ -2583,69 +2515,10 @@
 
         function updateDeadlineScopeOptions() {
             const scope = document.getElementById('deadlineScope').value;
-            const osraWrap = document.getElementById('deadlineScopeOsraWrap');
-            const valueWrap = document.getElementById('deadlineScopeValueWrap');
-            const selectEl = document.getElementById('deadlineScopeValue');
-
-            if (scope === 'all') {
-                osraWrap.classList.add('scope-select-hidden');
-                valueWrap.classList.add('scope-select-hidden');
-                selectEl.innerHTML = '';
-            } else if (scope === 'fasl' || scope === 'servant') {
-                osraWrap.classList.remove('scope-select-hidden');
-                valueWrap.classList.remove('scope-select-hidden');
-                selectEl.classList.remove('scope-select-hidden');
-                
-                const osraSelect = document.getElementById('deadlineScopeOsra');
-                const osras = getPriestServices();
-                osraSelect.innerHTML = '<option value="">اختر الأسرة</option>';
-                osras.forEach(o => {
-                    osraSelect.innerHTML += `<option value="${o.name}">${o.name}</option>`;
-                });
-                
-                selectEl.innerHTML = '<option value="">اختر الأسرة أولاً</option>';
-            } else {
-                // 'osra'
-                osraWrap.classList.add('scope-select-hidden');
-                valueWrap.classList.remove('scope-select-hidden');
-                populateScopeSelect(selectEl, scope, 'اختر من القائمة');
-            }
-        }
-
-        function updateDeadlineFaslOrServantOptions() {
-            const scope = document.getElementById('deadlineScope').value;
-            const osraVal = document.getElementById('deadlineScopeOsra').value;
-            const selectEl = document.getElementById('deadlineScopeValue');
-            if (!osraVal) {
-                selectEl.innerHTML = '<option value="">اختر الأسرة أولاً</option>';
-                return;
-            }
-
-            if (scope === 'fasl') {
-                const osras = getPriestServices();
-                const selectedOsra = osras.find(o => o.name === osraVal);
-                const classes = selectedOsra ? selectedOsra.fasls : [];
-
-                selectEl.innerHTML = '<option value="">اختر الفصل</option>';
-                classes.forEach(f => {
-                    selectEl.innerHTML += `<option value="${f}">${f}</option>`;
-                });
-            } else if (scope === 'servant') {
-                const curr = JSON.parse(localStorage.getItem('currentPriest'));
-                const allServants = JSON.parse(localStorage.getItem('servants') || '[]');
-                const myServants = allServants.filter(s => s.priestUser === curr.username);
-                
-                const familyServants = myServants.filter(s => {
-                    if (!s.osra) return false;
-                    return s.osra.split(',').map(o => o.trim()).includes(osraVal);
-                });
-
-                selectEl.innerHTML = '<option value="">اختر الخادم</option>';
-                familyServants.forEach(s => {
-                    const displayName = s.fullName || s.username;
-                    selectEl.innerHTML += `<option value="${s.username}">${displayName}</option>`;
-                });
-            }
+            populateScopeSelect(document.getElementById('deadlineScopeValue'), scope, 'اختر من القائمة');
+            const wrap = document.getElementById('deadlineScopeValueWrap');
+            if (scope === 'all') wrap.classList.add('scope-select-hidden');
+            else wrap.classList.remove('scope-select-hidden');
         }
 
         function toggleReportSource() {
@@ -2653,13 +2526,17 @@
             const periodTypeWrap = document.getElementById('reportPeriodTypeWrap');
             const periodValueWrap = document.getElementById('reportPeriodValueWrap');
             
+            const yearWrap = document.getElementById('reportYearSelectWrap');
+            const monthWrap = document.getElementById('reportMonthSelectWrap');
+
             if (isArchive) {
                 if (periodTypeWrap) periodTypeWrap.style.display = 'block';
-                if (periodValueWrap) periodValueWrap.style.display = 'block';
-                fetchArchivedReports();
+                handlePeriodTypeChange();
             } else {
                 if (periodTypeWrap) periodTypeWrap.style.display = 'none';
                 if (periodValueWrap) periodValueWrap.style.display = 'none';
+                if (yearWrap) yearWrap.classList.add('scope-select-hidden');
+                if (monthWrap) monthWrap.classList.add('scope-select-hidden');
                 generateReport();
             }
         }
@@ -2731,44 +2608,260 @@
             });
         }
 
-        function generateReport() {
-            const rows = getFilteredReportRows();
-            const tbody = document.getElementById('reportTableBody');
-            if (!tbody) return;
-
-            if (rows.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-muted text-center py-4">لا توجد بيانات مطابقة للبحث</td></tr>';
+        function getStatusBadge(status) {
+            if (status === 'رد') {
+                return '<span class="badge bg-success">تم الرد</span>';
+            } else if (status === 'لم يرد') {
+                return '<span class="badge bg-warning text-dark">لم يرد</span>';
             } else {
-                tbody.innerHTML = rows.map(r => {
-                    let statusBadge = '';
-                    if (r.status === 'رد') {
-                        statusBadge = '<span class="badge bg-success">تم الرد</span>';
-                    } else if (r.status === 'لم يرد') {
-                        statusBadge = '<span class="badge bg-warning text-dark">لم يرد</span>';
-                    } else if (r.status === 'الخادم لم يفتقد' || r.status === 'لم يفتقد' || r.status === 'لم يفتقد بعد') {
-                        statusBadge = '<span class="badge bg-danger">الخادم لم يفتقد</span>';
-                    } else {
-                        statusBadge = `<span class="badge bg-secondary">${r.status || 'لم يتم الاتصال بعد'}</span>`;
-                    }
-                    return `
+                return '<span class="badge bg-danger">الخادم لم يفتقد</span>';
+            }
+        }
+
+        function isMergedReport() {
+            const isArchive = document.getElementById('reportMainType').value === 'archive';
+            if (!isArchive) return false;
+            
+            const type = document.getElementById('reportPeriodType').value;
+            if (type === 'monthly') {
+                const periodVal = document.getElementById('reportPeriodValue') ? document.getElementById('reportPeriodValue').value : '';
+                return periodVal === 'all_weeks';
+            } else if (type === 'yearly') {
+                const monthVal = document.getElementById('reportMonthSelect') ? document.getElementById('reportMonthSelect').value : '';
+                return monthVal === 'all_months';
+            }
+            return false;
+        }
+
+        function getMergedReportData() {
+            const curr = JSON.parse(localStorage.getItem('currentPriest'));
+            const type = document.getElementById('reportPeriodType').value;
+            const serviceDay = getSelectedServiceDay();
+
+            const arabicMonths = [
+                'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+                'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+            ];
+
+            let title = `تقرير الافتقاد المجمع - ${curr ? curr.church : ''}`;
+            let sections = [];
+            let allRows = [];
+
+            if (type === 'monthly') {
+                const monthVal = document.getElementById('reportMonthSelect').value;
+                const [year, month] = monthVal.split(':').map(Number);
+                const weeks = getWeeksForMonth(year, month, serviceDay);
+                const sortedWeeks = [...weeks].reverse();
+                
+                title += ` (لشهر ${month}/${year})`;
+
+                sortedWeeks.forEach(w => {
+                    const rows = getFilteredReportRows(w.start, w.end);
+                    const replied = rows.filter(r => r.status === 'رد').length;
+                    const noReply = rows.filter(r => r.status === 'لم يرد').length;
+                    const notVisited = rows.filter(r => r.status !== 'رد' && r.status !== 'لم يرد').length;
+
+                    sections.push({
+                        label: w.label,
+                        rows: rows,
+                        replied,
+                        noReply,
+                        notVisited
+                    });
+                    allRows.push(...rows);
+                });
+            } else if (type === 'yearly') {
+                const yearVal = document.getElementById('reportYearSelect').value;
+                const year = parseInt(yearVal);
+                
+                title += ` (لسنة ${year})`;
+
+                for (let m = 0; m < 12; m++) {
+                    const weeks = getWeeksForMonth(year, m + 1, serviceDay);
+                    if (weeks.length === 0) continue;
+                    
+                    const sortedWeeks = [...weeks].reverse();
+                    sortedWeeks.forEach(w => {
+                        const rows = getFilteredReportRows(w.start, w.end);
+                        const replied = rows.filter(r => r.status === 'رد').length;
+                        const noReply = rows.filter(r => r.status === 'لم يرد').length;
+                        const notVisited = rows.filter(r => r.status !== 'رد' && r.status !== 'لم يرد').length;
+
+                        sections.push({
+                            label: `${arabicMonths[m]} - ${w.label}`,
+                            rows: rows,
+                            replied,
+                            noReply,
+                            notVisited
+                        });
+                        allRows.push(...rows);
+                    });
+                }
+            }
+
+            const totalReplied = allRows.filter(r => r.status === 'رد').length;
+            const totalNoReply = allRows.filter(r => r.status === 'لم يرد').length;
+            const totalNotVisited = allRows.filter(r => r.status !== 'رد' && r.status !== 'لم يرد').length;
+
+            return {
+                title,
+                priestName: curr ? curr.name : '',
+                generatedAt: formatArabicDateTime(new Date().toISOString()),
+                sections,
+                summary: [
+                    ['تم الرد', totalReplied],
+                    ['لم يرد', totalNoReply],
+                    ['الخادم لم يفتقد', totalNotVisited]
+                ],
+                headers: ['المخدوم', 'الخادم', 'الأسرة', 'الفصل', 'حالة الافتقاد', 'تاريخ التحديث']
+            };
+        }
+
+        function generateReport() {
+            const isMerged = isMergedReport();
+            const container = document.getElementById('reportContentToExport');
+            if (!container) return;
+
+            if (!isMerged) {
+                if (!document.getElementById('reportPieChart')) {
+                    container.innerHTML = `
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <div class="card p-3 shadow-sm h-100">
+                                    <h6 class="fw-bold text-center text-primary mb-3">حالة الافتقادات (دائري)</h6>
+                                    <div class="chart-wrapper-250">
+                                        <canvas id="reportPieChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card p-3 shadow-sm h-100">
+                                    <h6 class="fw-bold text-center text-primary mb-3">تفاصيل الافتقادات (أعمدة)</h6>
+                                    <div class="chart-wrapper-250">
+                                        <canvas id="reportBarChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped align-middle text-center" id="reportTable">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th>المخدوم</th>
+                                        <th>الخادم</th>
+                                        <th>الأسرة</th>
+                                        <th>الفصل</th>
+                                        <th>حالة الافتقاد</th>
+                                        <th>تاريخ التحديث</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reportTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+
+                const rows = getFilteredReportRows();
+                const tbody = document.getElementById('reportTableBody');
+                if (!tbody) return;
+
+                if (rows.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-muted text-center py-4">لا توجد بيانات مطابقة للبحث</td></tr>';
+                } else {
+                    tbody.innerHTML = rows.map(r => `
                         <tr>
                             <td>${r.name}</td>
                             <td>${r.servantUser}</td>
                             <td>${r.osra}</td>
                             <td>${r.fasl}</td>
-                            <td>${statusBadge}</td>
+                            <td>${getStatusBadge(r.status)}</td>
                             <td>${r.updatedAt}</td>
                         </tr>
+                    `).join('');
+                }
+                renderReportCharts(rows);
+            } else {
+                const data = getMergedReportData();
+                let html = '';
+
+                data.sections.forEach(sec => {
+                    html += `
+                        <div class="card p-3 shadow-sm mb-4 border-start border-3 border-primary">
+                            <h6 class="fw-bold text-primary mb-3"><i class="fas fa-calendar-week me-1"></i> ${sec.label}</h6>
+                            <div class="d-flex gap-3 mb-3 flex-wrap">
+                                <div><span class="badge bg-success">تم الرد: ${sec.replied}</span></div>
+                                <div><span class="badge bg-warning text-dark">لم يرد: ${sec.noReply}</span></div>
+                                <div><span class="badge bg-danger">الخادم لم يفتقد: ${sec.notVisited}</span></div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped table-sm align-middle text-center">
+                                    <thead class="table-secondary">
+                                        <tr>
+                                            <th>المخدوم</th>
+                                            <th>الخادم</th>
+                                            <th>الأسرة</th>
+                                            <th>الفصل</th>
+                                            <th>حالة الافتقاد</th>
+                                            <th>تاريخ التحديث</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${sec.rows.map(r => `
+                                            <tr>
+                                                <td>${r.name}</td>
+                                                <td>${r.servantUser}</td>
+                                                <td>${r.osra}</td>
+                                                <td>${r.fasl}</td>
+                                                <td>${getStatusBadge(r.status)}</td>
+                                                <td>${r.updatedAt}</td>
+                                            </tr>
+                                        `).join('') || '<tr><td colspan="6" class="text-muted">لا توجد بيانات</td></tr>'}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     `;
-                }).join('');
+                });
+
+                html += `
+                    <div class="card p-4 shadow-sm mb-4 border-primary">
+                        <h5 class="fw-bold text-primary text-center mb-4"><i class="fas fa-chart-line me-2"></i> ملخص الفترة الإجمالي</h5>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="chart-wrapper-250">
+                                    <canvas id="reportPieChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="chart-wrapper-250">
+                                    <canvas id="reportBarChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                container.innerHTML = html;
+
+                const totalReplied = data.summary.find(s => s[0] === 'تم الرد')[1];
+                const totalNoReply = data.summary.find(s => s[0] === 'لم يرد')[1];
+                const totalNotVisited = data.summary.find(s => s[0] === 'الخادم لم يفتقد')[1];
+                
+                const combinedFakeRows = [
+                    ...Array(totalReplied).fill({ status: 'رد' }),
+                    ...Array(totalNoReply).fill({ status: 'لم يرد' }),
+                    ...Array(totalNotVisited).fill({ status: 'الخادم لم يفتقد' })
+                ];
+                renderReportCharts(combinedFakeRows);
             }
-            renderReportCharts(rows);
         }
 
         function renderReportCharts(rows) {
             const repliedCount = rows.filter(r => r.status === 'رد').length;
             const noReplyCount = rows.filter(r => r.status === 'لم يرد').length;
-            const notVisitedCount = rows.filter(r => r.status === 'الخادم لم يفتقد' || r.status === 'لم يفتقد' || r.status === 'لم يفتقد بعد' || r.status === 'لم يتم الاتصال بعد').length;
+            const notVisitedCount = rows.filter(r => r.status === 'لم يفتقد' || r.status === 'لم يتم الاتصال بعد').length;
 
             const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
             const textColor = isDark ? '#eee' : '#1e293b';
@@ -2783,7 +2876,7 @@
                 reportPieChartObj = new Chart(pieCtx, {
                     type: 'pie',
                     data: {
-                        labels: ['تم الرد', 'لم يرد', 'الخادم لم يفتقد'],
+                        labels: ['تم الرد', 'لم يرد', 'لم يفتقد'],
                         datasets: [{
                             data: [repliedCount, noReplyCount, notVisitedCount],
                             backgroundColor: ['#2ec4b6', '#ff9f1c', '#e71d36'],
@@ -2812,7 +2905,7 @@
                 reportBarChartObj = new Chart(barCtx, {
                     type: 'bar',
                     data: {
-                        labels: ['تم الرد', 'لم يرد', 'الخادم لم يفتقد'],
+                        labels: ['تم الرد', 'لم يرد', 'لم يفتقد'],
                         datasets: [{
                             label: 'العدد',
                             data: [repliedCount, noReplyCount, notVisitedCount],
@@ -2881,7 +2974,7 @@
             return days[day] || day || '';
         }
 
-                function getFilteredReportRows() {
+        function getFilteredReportRows(customDateFrom = null, customDateTo = null) {
             let curr = JSON.parse(localStorage.getItem('currentPriest'));
             if (!curr) return [];
 
@@ -2891,26 +2984,28 @@
 
             let scope = document.getElementById('reportScope').value;
             let scopeVal = document.getElementById('reportScopeValue').value;
-            let dateFrom = null;
-            let dateTo = null;
+            let dateFrom = customDateFrom;
+            let dateTo = customDateTo;
             
-            const isArchive = document.getElementById('reportMainType').value === 'archive';
-            if (isArchive) {
-                const periodVal = document.getElementById('reportPeriodValue') ? document.getElementById('reportPeriodValue').value : '';
-                if (periodVal) {
-                    const [periodType, val1, val2] = periodVal.split(':');
-                    if (periodType === 'week') {
-                        dateFrom = val1;
-                        dateTo = val2;
-                    } else if (periodType === 'month') {
-                        const year = parseInt(val1);
-                        const month = parseInt(val2) - 1;
-                        dateFrom = new Date(year, month, 1).toISOString().split('T')[0];
-                        dateTo = new Date(year, month + 1, 0).toISOString().split('T')[0];
-                    } else if (periodType === 'year') {
-                        const year = parseInt(val1);
-                        dateFrom = `${year}-01-01`;
-                        dateTo = `${year}-12-31`;
+            if (!dateFrom && !dateTo) {
+                const isArchive = document.getElementById('reportMainType').value === 'archive';
+                if (isArchive) {
+                    const periodVal = document.getElementById('reportPeriodValue') ? document.getElementById('reportPeriodValue').value : '';
+                    if (periodVal && periodVal !== 'all_weeks') {
+                        const [periodType, val1, val2] = periodVal.split(':');
+                        if (periodType === 'week') {
+                            dateFrom = val1;
+                            dateTo = val2;
+                        } else if (periodType === 'month') {
+                            const year = parseInt(val1);
+                            const month = parseInt(val2) - 1;
+                            dateFrom = new Date(year, month, 1).toISOString().split('T')[0];
+                            dateTo = new Date(year, month + 1, 0).toISOString().split('T')[0];
+                        } else if (periodType === 'year') {
+                            const year = parseInt(val1);
+                            dateFrom = `${year}-01-01`;
+                            dateTo = `${year}-12-31`;
+                        }
                     }
                 }
             }
@@ -2918,11 +3013,8 @@
 
             if (status === 'servants_not_visited') {
                 let filteredServants = myServants.filter(servant => {
-                    if (scope === 'osra' && scopeVal) {
-                        let servantOsrasList = servant.osra ? servant.osra.split(',').map(o => o.trim()) : [];
-                        if (!servantOsrasList.includes(scopeVal)) return false;
-                    }
-                    if (scope === 'fasl' && scopeVal && (!servant.fasl || !servant.fasl.split(',').map(f => f.trim()).includes(scopeVal))) return false;
+                    if (scope === 'osra' && scopeVal && servant.osra !== scopeVal) return false;
+                    if (scope === 'fasl' && scopeVal && servant.fasl !== scopeVal) return false;
                     if (scope === 'servant' && scopeVal && servant.username !== scopeVal) return false;
 
                     let servantWaznat = allWaznat.filter(w => w.servantUser === servant.username);
@@ -2963,11 +3055,8 @@
                     let servant = myServants.find(s => s.username === w.servantUser);
                     if (!servant) return;
 
-                    if (scope === 'osra' && scopeVal) {
-                        let servantOsrasList = servant.osra ? servant.osra.split(',').map(o => o.trim()) : [];
-                        if (!servantOsrasList.includes(scopeVal)) return;
-                    }
-                    if (scope === 'fasl' && scopeVal && (!servant.fasl || !servant.fasl.split(',').map(f => f.trim()).includes(scopeVal))) return;
+                    if (scope === 'osra' && scopeVal && servant.osra !== scopeVal) return;
+                    if (scope === 'fasl' && scopeVal && servant.fasl !== scopeVal) return;
                     if (scope === 'servant' && scopeVal && servant.username !== scopeVal) return;
 
                     let statusToUse = w.lastCallResult;
@@ -3004,7 +3093,7 @@
                     // تطبيق فلترة الحالات بناءً على الحالة المستخرجة ديناميكياً
                     if (status === 'replied' && statusToUse !== 'رد') return;
                     if (status === 'no_reply' && statusToUse !== 'لم يرد') return;
-                    if (status === 'not_visited' && statusToUse !== 'الخادم لم يفتقد' && statusToUse !== 'لم يفتقد' && statusToUse !== 'لم يفتقد بعد' && statusToUse !== 'لم يتم الاتصال بعد') return;
+                    if (status === 'not_visited' && statusToUse !== 'لم يفتقد' && statusToUse !== 'لم يتم الاتصال بعد') return;
 
                     processedWaznat.push({
                         wazna: w,
@@ -3033,7 +3122,7 @@
             const rows = getFilteredReportRows();
             const repliedCount = rows.filter(r => r.status === 'رد').length;
             const noReplyCount = rows.filter(r => r.status === 'لم يرد').length;
-            const notVisitedCount = rows.filter(r => r.status === 'الخادم لم يفتقد' || r.status === 'لم يفتقد' || r.status === 'لم يفتقد بعد' || r.status === 'لم يتم الاتصال بعد').length;
+            const notVisitedCount = rows.filter(r => r.status === 'لم يفتقد' || r.status === 'لم يتم الاتصال بعد').length;
 
             return {
                 title: `تقرير الافتقاد - ${curr ? curr.church : ''}`,
@@ -3042,7 +3131,7 @@
                 summary: [
                     ['تم الرد', repliedCount],
                     ['لم يرد', noReplyCount],
-                    ['الخادم لم يفتقد', notVisitedCount]
+                    ['لم يفتقد', notVisitedCount]
                 ],
                 headers: ['المخدوم', 'الخادم', 'الأسرة', 'الفصل', 'حالة الافتقاد', 'تاريخ التحديث'],
                 rows: rows.map(r => [r.name, r.servantUser, r.osra, r.fasl, r.status, r.updatedAt])
@@ -3055,42 +3144,137 @@
                 return;
             }
 
-            const data = getReportExportData();
-            const sheetData = [
-                [data.title],
-                [`الكاهن: ${data.priestName}`],
-                [`تاريخ التصدير: ${data.generatedAt}`],
-                [],
-                ['ملخص التقرير'],
-                ['الحالة', 'العدد'],
-                ...data.summary,
-                [],
-                data.headers,
-                ...data.rows
-            ];
+            const isMerged = isMergedReport();
+            if (!isMerged) {
+                const data = getReportExportData();
+                const sheetData = [
+                    [data.title],
+                    [`الكاهن: ${data.priestName}`],
+                    [`تاريخ التصدير: ${data.generatedAt}`],
+                    [],
+                    ['ملخص التقرير'],
+                    ['الحالة', 'العدد'],
+                    ...data.summary,
+                    [],
+                    data.headers,
+                    ...data.rows
+                ];
 
-            const ws = XLSX.utils.aoa_to_sheet(sheetData);
-            ws['!cols'] = [{ wch: 22 }, { wch: 18 }, { wch: 16 }, { wch: 16 }, { wch: 20 }, { wch: 24 }];
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'التقرير');
-            XLSX.writeFile(wb, 'تقرير_الافتقاد.xlsx');
+                const ws = XLSX.utils.aoa_to_sheet(sheetData);
+                ws['!cols'] = [{ wch: 22 }, { wch: 18 }, { wch: 16 }, { wch: 16 }, { wch: 20 }, { wch: 24 }];
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'التقرير');
+                XLSX.writeFile(wb, 'تقرير_الافتقاد.xlsx');
+            } else {
+                const data = getMergedReportData();
+                const wb = XLSX.utils.book_new();
+
+                const summarySheetData = [
+                    [data.title],
+                    [`الكاهن: ${data.priestName}`],
+                    [`تاريخ التصدير: ${data.generatedAt}`],
+                    [],
+                    ['ملخص الفترة الإجمالي'],
+                    ['الحالة', 'العدد'],
+                    ...data.summary
+                ];
+                const wsSum = XLSX.utils.aoa_to_sheet(summarySheetData);
+                XLSX.utils.book_append_sheet(wb, wsSum, 'الملخص الإجمالي');
+
+                const detailedSheetData = [
+                    [data.title],
+                    [`الكاهن: ${data.priestName}`],
+                    [`تاريخ التصدير: ${data.generatedAt}`],
+                    []
+                ];
+
+                data.sections.forEach(sec => {
+                    detailedSheetData.push(
+                        [],
+                        [sec.label],
+                        [`تم الرد: ${sec.replied}`, `لم يرد: ${sec.noReply}`, `الخادم لم يفتقد: ${sec.notVisited}`],
+                        data.headers,
+                        ...sec.rows.map(r => [r.name, r.servantUser, r.osra, r.fasl, r.status, r.updatedAt])
+                    );
+                });
+
+                const wsDet = XLSX.utils.aoa_to_sheet(detailedSheetData);
+                wsDet['!cols'] = [{ wch: 22 }, { wch: 18 }, { wch: 16 }, { wch: 16 }, { wch: 20 }, { wch: 24 }];
+                XLSX.utils.book_append_sheet(wb, wsDet, 'التقارير التفصيلية');
+
+                XLSX.writeFile(wb, 'تقرير_الافتقاد_المجمع.xlsx');
+            }
         }
 
         function exportPDF() {
-            const data = getReportExportData();
+            const isMerged = isMergedReport();
+            let data;
+            let sectionsHtml = '';
+
             const escapeHtml = (value) => String(value)
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;');
 
+            if (!isMerged) {
+                data = getReportExportData();
+                const tableRows = data.rows.map(row =>
+                    `<tr>${row.map(cell => `<td>${escapeHtml(cell)}</td>`).join('')}</tr>`
+                ).join('');
+                const headerCells = data.headers.map(h => `<th>${escapeHtml(h)}</th>`).join('');
+
+                sectionsHtml = `
+                    <h2>تفاصيل المخدومين</h2>
+                    <table>
+                        <thead>
+                            <tr>${headerCells}</tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows || '<tr><td colspan="6" style="text-align:center">لا توجد بيانات مطابقة</td></tr>'}
+                        </tbody>
+                    </table>
+                `;
+            } else {
+                data = getMergedReportData();
+                const headerCells = data.headers.map(h => `<th>${escapeHtml(h)}</th>`).join('');
+
+                data.sections.forEach(sec => {
+                    const tableRows = sec.rows.map(r =>
+                        `<tr>
+                            <td>${escapeHtml(r.name)}</td>
+                            <td>${escapeHtml(r.servantUser)}</td>
+                            <td>${escapeHtml(r.osra)}</td>
+                            <td>${escapeHtml(r.fasl)}</td>
+                            <td>${escapeHtml(r.status)}</td>
+                            <td>${escapeHtml(r.updatedAt)}</td>
+                        </tr>`
+                    ).join('');
+
+                    sectionsHtml += `
+                        <div style="margin-bottom: 24px; border: 1px solid #cbd5e1; padding: 14px; border-radius: 8px; page-break-inside: avoid; background: #fff;">
+                            <h3 style="color: #4f46e5; margin-top: 0; margin-bottom: 6px; font-size: 14px; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">${escapeHtml(sec.label)}</h3>
+                            <div style="font-size: 11px; margin-bottom: 8px; color: #475569;">
+                                <span style="margin-left: 16px; font-weight: bold; color: #16a34a;">تم الرد: ${sec.replied}</span>
+                                <span style="margin-left: 16px; font-weight: bold; color: #ca8a04;">لم يرد: ${sec.noReply}</span>
+                                <span style="font-weight: bold; color: #dc2626;">الخادم لم يفتقد: ${sec.notVisited}</span>
+                            </div>
+                            <table style="width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 11px;">
+                                <thead>
+                                    <tr>${headerCells}</tr>
+                                </thead>
+                                <tbody>
+                                    ${tableRows || '<tr><td colspan="6" style="text-align:center">لا توجد بيانات</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                });
+            }
+
             const summaryRows = data.summary.map(item =>
                 `<tr><td>${escapeHtml(item[0])}</td><td>${escapeHtml(item[1])}</td></tr>`
             ).join('');
-            const tableRows = data.rows.map(row =>
-                `<tr>${row.map(cell => `<td>${escapeHtml(cell)}</td>`).join('')}</tr>`
-            ).join('');
-            const headerCells = data.headers.map(h => `<th>${escapeHtml(h)}</th>`).join('');
 
             const html = `<!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -3100,11 +3284,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 <style>
 @page { size: A4 landscape; margin: 12mm; }
-body { font-family: 'Cairo', sans-serif; color: #1e293b; direction: rtl; padding: 24px; margin: 0; }
+body { font-family: 'Cairo', sans-serif; color: #1e293b; direction: rtl; padding: 24px; margin: 0; background: #f8fafc; }
 h1 { color: #4f46e5; font-size: 22px; margin: 0 0 8px; }
 .meta { color: #64748b; font-size: 13px; margin-bottom: 16px; line-height: 1.8; }
 h2 { color: #4f46e5; font-size: 16px; margin: 18px 0 8px; }
-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; background: #fff; }
 th, td { border: 1px solid #cbd5e1; padding: 7px 10px; text-align: right; }
 th { background: #4f46e5; color: #fff; font-weight: 700; }
 tr:nth-child(even) td { background: #f8fafc; }
@@ -3115,16 +3299,12 @@ tr:nth-child(even) td { background: #f8fafc; }
 <body>
 <h1>${escapeHtml(data.title)}</h1>
 <div class="meta">الكاهن: ${escapeHtml(data.priestName)}<br>تاريخ التصدير: ${escapeHtml(data.generatedAt)}</div>
-<h2>ملخص التقرير</h2>
+<h2>ملخص الفترة الإجمالي</h2>
 <table class="summary-table">
 <thead><tr><th>الحالة</th><th>العدد</th></tr></thead>
 <tbody>${summaryRows}</tbody>
 </table>
-<h2>تفاصيل المخدومين</h2>
-<table>
-<thead><tr>${headerCells}</tr></thead>
-<tbody>${tableRows || '<tr><td colspan="6" style="text-align:center">لا توجد بيانات مطابقة</td></tr>'}</tbody>
-</table>
+${sectionsHtml}
 <script>
 window.onload = function() {
   document.fonts.ready.then(function() {
@@ -3388,20 +3568,14 @@ window.onload = function() {
                 }
 
                 let editDeleteHtml = '';
-                if (!msg.isDeleted) {
-                    if (isMe) {
-                        editDeleteHtml = `
-                            <span class="ms-2" style="cursor: pointer; opacity: 0.6;" onclick="startInlineEdit(${msg.id})"><i class="fas fa-pencil-alt text-muted" title="تعديل"></i></span>
-                            <span class="ms-1" style="cursor: pointer; opacity: 0.6;" onclick="showDeleteModal(${msg.id}, true)"><i class="fas fa-trash text-danger" title="حذف"></i></span>
-                        `;
-                    } else {
-                        editDeleteHtml = `
-                            <span class="ms-1" style="cursor: pointer; opacity: 0.6;" onclick="showDeleteModal(${msg.id}, false)"><i class="fas fa-trash text-danger" title="حذف"></i></span>
-                        `;
-                    }
-                } else {
+                if (isMe && !msg.isDeleted) {
                     editDeleteHtml = `
-                        <span class="ms-1" style="cursor: pointer; opacity: 0.6;" onclick="showDeleteModal(${msg.id}, false)"><i class="fas fa-trash text-danger" title="حذف لدي"></i></span>
+                        <span class="ms-2" style="cursor: pointer; opacity: 0.6;" onclick="startInlineEdit(${msg.id})"><i class="fas fa-pencil-alt text-muted" title="تعديل"></i></span>
+                        <span class="ms-1" style="cursor: pointer; opacity: 0.6;" onclick="showDeleteModal(${msg.id}, true)"><i class="fas fa-trash text-danger" title="حذف"></i></span>
+                    `;
+                } else if (!isMe && !msg.isDeleted) {
+                    editDeleteHtml = `
+                        <span class="ms-1" style="cursor: pointer; opacity: 0.6;" onclick="showDeleteModal(${msg.id}, false)"><i class="fas fa-trash text-danger" title="حذف"></i></span>
                     `;
                 }
 
@@ -4491,8 +4665,8 @@ window.onload = function() {
             deadlineList.forEach(dl => {
                 let matches = false;
                 if (dl.scope === 'all') matches = true;
-                else if (dl.scope === 'osra' && servant.osra && servant.osra.split(',').map(o => o.trim()).includes(dl.scopeValue)) matches = true;
-                else if (dl.scope === 'fasl' && servant.fasl && servant.fasl.split(',').map(f => f.trim()).includes(dl.scopeValue)) matches = true;
+                else if (dl.scope === 'osra' && servant.osra === dl.scopeValue) matches = true;
+                else if (dl.scope === 'fasl' && servant.fasl === dl.scopeValue) matches = true;
                 else if (dl.scope === 'servant' && servant.username === dl.scopeValue) matches = true;
                 if (matches && priorities[dl.scope] > bestPriority) {
                     best = dl;
@@ -4519,9 +4693,9 @@ window.onload = function() {
             if (scope === 'all') {
                 targetServants = myServants.map(s => s.username);
             } else if (scope === 'osra') {
-                targetServants = myServants.filter(s => s.osra && s.osra.split(',').map(o => o.trim()).includes(scopeValue)).map(s => s.username);
+                targetServants = myServants.filter(s => s.osra === scopeValue).map(s => s.username);
             } else if (scope === 'fasl') {
-                targetServants = myServants.filter(s => s.fasl && s.fasl.split(',').map(f => f.trim()).includes(scopeValue)).map(s => s.username);
+                targetServants = myServants.filter(s => s.fasl === scopeValue).map(s => s.username);
             } else if (scope === 'servant') {
                 targetServants = myServants.filter(s => s.username === scopeValue).map(s => s.username);
             }
@@ -4653,10 +4827,10 @@ window.onload = function() {
                     waznat.forEach(w => {
                         if (w.servantUser === servant.username) {
                             let isLate = w.lastCallResult === 'رد' && w.timestamp && (new Date(w.timestamp) >= deadlineTime);
-                            let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'الخادم لم يفتقد' && w.lastCallResult !== 'لم يفتقد' && w.lastCallResult !== 'لم يفتقد بعد';
+                            let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'لم يفتقد';
                             
                             if (isLate || isNotCompleted) {
-                                w.lastCallResult = 'الخادم لم يفتقد';
+                                w.lastCallResult = 'لم يفتقد';
                                 w.timestamp = new Date().toISOString();
                                 changed = true;
                             }
@@ -4687,7 +4861,7 @@ window.onload = function() {
             // الكود الجديد لحساب حالة لم يفتقد ضمن الإحصائيات
             let completed = myWaznat.filter(w => w.lastCallResult === 'رد').length;
             let uncompleted = myWaznat.filter(w => w.lastCallResult === 'لم يرد' || w.lastCallResult === 'إلغاء').length;
-            let missed = myWaznat.filter(w => w.lastCallResult === 'الخادم لم يفتقد' || w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد').length; // إضافة هذا السطر
+            let missed = myWaznat.filter(w => w.lastCallResult === 'لم يفتقد').length; // إضافة هذا السطر
             let totalCalls = completed + uncompleted + missed; // تحديث الإجمالي
 
 
@@ -4702,7 +4876,29 @@ window.onload = function() {
             document.getElementById('statUncompletedCount').innerText = uncompleted;
             document.getElementById('statPercentage').innerText = percentage + '%';
 
-            initCharts();
+            if (barChart) {
+                let osras = getPriestServices();
+                let osraNames = osras.map(o => o.name);
+                if (osraNames.length === 0) osraNames = ['عام'];
+
+                let osraRates = [];
+                osraNames.forEach(name => {
+                    let waznatInOsra = myWaznat.filter(w => {
+                        if (name === 'عام') {
+                            return !w.osra || w.osra === 'عام';
+                        }
+                        return w.osra === name;
+                    });
+                    let total = waznatInOsra.length;
+                    let completed = waznatInOsra.filter(w => w.lastCallResult === 'رد').length;
+                    let rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+                    osraRates.push(rate);
+                });
+
+                barChart.data.labels = osraNames;
+                barChart.data.datasets[0].data = osraRates;
+                barChart.update();
+            }
         }
 
         function switchTab(tabId, el) {
@@ -4798,18 +4994,13 @@ window.onload = function() {
         let barChart;
 
         function initCharts() {
-            const barCanvas = document.getElementById('barChart');
-            if (!barCanvas) return;
-            if (barChart) {
-                barChart.destroy();
-            }
+            if (barChart) return;
             const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
             const textColor = isDark ? '#eee' : '#1e293b';
             const barColor = isDark ? '#f0d080' : '#4f46e5';
             const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
 
             let curr = JSON.parse(localStorage.getItem('currentPriest'));
-            if (!curr) return;
             let allServants = JSON.parse(localStorage.getItem('servants') || '[]');
             let myServantUsernames = allServants.filter(s => s.priestUser === curr.username).map(s => s.username);
 
@@ -4824,15 +5015,10 @@ window.onload = function() {
             let osraRates = [];
             osraNames.forEach(name => {
                 let waznatInOsra = myWaznat.filter(w => {
-                    let srv = allServants.find(s => s.username === w.servantUser);
-                    if (w.osra) {
-                        return w.osra === name;
-                    } else if (srv && srv.osra) {
-                        let srvOsras = srv.osra.split(',').map(o => o.trim()).filter(Boolean);
-                        return srvOsras.includes(name);
-                    } else {
-                        return name === 'عام';
+                    if (name === 'عام') {
+                        return !w.osra || w.osra === 'عام';
                     }
+                    return w.osra === name;
                 });
                 let total = waznatInOsra.length;
                 let completed = waznatInOsra.filter(w => w.lastCallResult === 'رد').length;
@@ -4840,7 +5026,7 @@ window.onload = function() {
                 osraRates.push(rate);
             });
 
-            const barCtx = barCanvas.getContext('2d');
+            const barCtx = document.getElementById('barChart').getContext('2d');
             barChart = new Chart(barCtx, {
                 type: 'bar',
                 data: {
@@ -4849,7 +5035,8 @@ window.onload = function() {
                         label: 'نسبة الافتقاد',
                         data: osraRates,
                         backgroundColor: barColor,
-                        borderRadius: 5
+                        borderRadius: 5,
+                        barPercentage: 0.6
                     }]
                 },
                 options: {
@@ -4867,12 +5054,12 @@ window.onload = function() {
                     },
                     scales: {
                         y: { 
-                            min: 0,
+                            beginAtZero: true, 
                             max: 100,
                             grid: { color: gridColor }, 
                             ticks: { 
                                 color: textColor, 
-                                stepSize: 50,
+                                precision: 0,
                                 callback: function(value) {
                                     return value + '%';
                                 }
@@ -4976,14 +5163,10 @@ window.onload = function() {
                 let servants = JSON.parse(localStorage.getItem('servants') || '[]');
                 let updated = false;
                 servants.forEach(s => {
-                    if (s.osra) {
-                        let list = s.osra.split(',').map(o => o.trim()).filter(Boolean);
-                        if (list.includes(osraName)) {
-                            list = list.filter(o => o !== osraName);
-                            s.osra = list.join(', ') || 'عام';
-                            s.fasl = 'عام';
-                            updated = true;
-                        }
+                    if (s.osra === osraName) {
+                        s.osra = 'عام';
+                        s.fasl = 'عام';
+                        updated = true;
                     }
                 });
                 if (updated) {
@@ -5045,14 +5228,7 @@ window.onload = function() {
             if (newName !== osraName) {
                 let servants = JSON.parse(localStorage.getItem('servants') || '[]');
                 servants.forEach(s => {
-                    if (s.osra) {
-                        let list = s.osra.split(',').map(o => o.trim()).filter(Boolean);
-                        let idx = list.indexOf(osraName);
-                        if (idx > -1) {
-                            list[idx] = newName;
-                            s.osra = list.join(', ');
-                        }
-                    }
+                    if (s.osra === osraName) s.osra = newName;
                 });
                 localStorage.setItem('servants', JSON.stringify(servants));
 
@@ -5097,9 +5273,8 @@ window.onload = function() {
                     let servants = JSON.parse(localStorage.getItem('servants') || '[]');
                     let updated = false;
                     servants.forEach(s => {
-                        if (s.osra && s.osra.split(',').map(o => o.trim()).includes(osraName) && s.fasl && s.fasl.split(',').map(f => f.trim()).includes(faslName)) {
-                            let classes = s.fasl.split(',').map(f => f.trim()).filter(f => f !== faslName);
-                            s.fasl = classes.join(', ') || 'عام';
+                        if (s.osra === osraName && s.fasl === faslName) {
+                            s.fasl = 'عام';
                             updated = true;
                         }
                     });
@@ -5174,7 +5349,7 @@ window.onload = function() {
 
             let html = '<ul class="list-group">';
             osra.fasls.forEach(fasl => {
-                let assignedServants = myServants.filter(s => s.osra && s.osra.split(',').map(o => o.trim()).includes(osraName) && s.fasl && s.fasl.split(',').map(f => f.trim()).includes(fasl));
+                let assignedServants = myServants.filter(s => s.osra && s.osra.split(',').map(o => o.trim()).includes(osraName) && s.fasl === fasl);
                 let servantsHTML = '';
                 if (assignedServants.length > 0) {
                     servantsHTML = `<div class="small text-success mt-1 fw-bold"><i class="fas fa-user-tie me-1"></i> الخدام: ${assignedServants.map(s => `<span class="badge bg-primary text-white mx-1">${s.fullName || s.username}</span>`).join('')}</div>`;
@@ -5238,18 +5413,13 @@ window.onload = function() {
                 listContainer.innerHTML = '<div class="col-12 text-muted">لا يوجد خدام مسجلين في هذه الأسرة بعد. أضفهم من تبويب الخدام.</div>';
             } else {
                 eligibleServants.forEach(s => {
-                    let isChecked = (s.fasl && s.fasl.split(',').map(f => f.trim()).includes(faslName)) ? 'checked' : '';
-                    let otherClasses = s.fasl ? s.fasl.split(',').map(f => f.trim()).filter(f => f !== faslName && f !== 'عام' && f !== '') : [];
-                    let extraText = otherClasses.length > 0 ? 'موزع أيضاً في: ' + otherClasses.join(', ') : 'غير موزع';
-                    if (s.fasl && s.fasl.split(',').map(f => f.trim()).includes(faslName)) {
-                        extraText = 'موزع في هذا الفصل' + (otherClasses.length > 0 ? ' (و أيضاً في: ' + otherClasses.join(', ') + ')' : '');
-                    }
+                    let isChecked = (s.fasl === faslName) ? 'checked' : '';
                     listContainer.innerHTML += `
                         <div class="col-md-6">
                             <div class="form-check border p-2 rounded">
                                 <input class="form-check-input servant-assign-cb" type="checkbox" value="${s.username}" id="chk_${s.username}" ${isChecked}>
                                 <label class="form-check-label fw-bold mx-2" for="chk_${s.username}">
-                                    ${s.fullName || s.username} <small class="text-muted">(${extraText})</small>
+                                    ${s.username} <small class="text-muted">(${s.fasl && s.fasl !== 'عام' && s.fasl !== faslName ? 'موزع في: ' + s.fasl : 'غير موزع'})</small>
                                 </label>
                             </div>
                         </div>`;
@@ -5276,19 +5446,12 @@ window.onload = function() {
                 let servantOsras = s.osra ? s.osra.split(',').map(o => o.trim()) : [];
                 if (s.priestUser === curr.username && servantOsras.includes(osraName)) {
                     if (selectedUsernames.includes(s.username)) {
-                        let classes = s.fasl && s.fasl !== 'عام' ? s.fasl.split(',').map(f => f.trim()) : [];
-                        if (!classes.includes(faslName)) {
-                            classes.push(faslName);
-                            s.fasl = classes.join(', ');
-                            changed = true;
-                        }
-                    } else if (unselectedUsernames.includes(s.username)) {
-                        let classes = s.fasl && s.fasl !== 'عام' ? s.fasl.split(',').map(f => f.trim()) : [];
-                        if (classes.includes(faslName)) {
-                            classes = classes.filter(f => f !== faslName);
-                            s.fasl = classes.join(', ') || 'عام';
-                            changed = true;
-                        }
+                        s.fasl = faslName;
+                        changed = true;
+                    } else if (unselectedUsernames.includes(s.username) && s.fasl === faslName) {
+                        // If they were unchecked but previously in this fasl, remove them from fasl
+                        s.fasl = 'عام';
+                        changed = true;
                     }
                 }
             });
@@ -5317,75 +5480,33 @@ window.onload = function() {
         function openEditServantModal(username, currentOsra, currentFasl) {
             document.getElementById('editServantUsername').value = username;
 
-            let container = document.getElementById('editServantOsrasContainer');
-            if (container) {
-                container.innerHTML = '';
-                let osras = getPriestServices();
-                
-                // Add 'عام' option as checkbox
-                let divGeneral = document.createElement('div');
-                divGeneral.className = 'form-check mb-2';
-                let inputGeneral = document.createElement('input');
-                inputGeneral.type = 'checkbox';
-                inputGeneral.className = 'form-check-input edit-osra-checkbox';
-                inputGeneral.value = 'عام';
-                inputGeneral.id = 'editOsra_General';
-                inputGeneral.onchange = () => {
-                    if (inputGeneral.checked) {
-                        // Uncheck all other checkboxes
-                        document.querySelectorAll('.edit-osra-checkbox').forEach(cb => {
-                            if (cb.id !== 'editOsra_General') cb.checked = false;
-                        });
-                    }
-                    populateEditServantFasls();
-                };
-                
-                let labelGeneral = document.createElement('label');
-                labelGeneral.className = 'form-check-label ms-2';
-                labelGeneral.htmlFor = 'editOsra_General';
-                labelGeneral.innerText = 'عام';
-                divGeneral.appendChild(inputGeneral);
-                divGeneral.appendChild(labelGeneral);
-                container.appendChild(divGeneral);
+            let select = document.getElementById('editServantOsraSelect');
+            let osras = getPriestServices();
+            select.innerHTML = '';
+            
+            let optPlaceholder = document.createElement('option');
+            optPlaceholder.value = '';
+            optPlaceholder.innerText = 'اختر الأسرة';
+            select.appendChild(optPlaceholder);
 
-                // Split current osras by comma
-                let currentOsrasList = currentOsra ? currentOsra.split(',').map(o => o.trim()).filter(Boolean) : ['عام'];
-                if (currentOsrasList.length === 0) currentOsrasList = ['عام'];
+            let optGeneral = document.createElement('option');
+            optGeneral.value = 'عام';
+            optGeneral.innerText = 'عام';
+            select.appendChild(optGeneral);
 
-                if (currentOsrasList.includes('عام')) {
-                    inputGeneral.checked = true;
-                }
+            osras.forEach(o => {
+                let opt = document.createElement('option');
+                opt.value = o.name;
+                opt.innerText = o.name;
+                select.appendChild(opt);
+            });
 
-                osras.forEach((o, i) => {
-                    let div = document.createElement('div');
-                    div.className = 'form-check mb-2';
-                    
-                    let input = document.createElement('input');
-                    input.type = 'checkbox';
-                    input.className = 'form-check-input edit-osra-checkbox';
-                    input.value = o.name;
-                    input.id = 'editOsra_' + i;
-                    input.onchange = () => {
-                        if (input.checked) {
-                            // Uncheck General checkbox
-                            let cbGen = document.getElementById('editOsra_General');
-                            if (cbGen) cbGen.checked = false;
-                        }
-                        populateEditServantFasls();
-                    };
-                    if (currentOsrasList.includes(o.name)) {
-                        input.checked = true;
-                    }
-
-                    let label = document.createElement('label');
-                    label.className = 'form-check-label ms-2';
-                    label.htmlFor = 'editOsra_' + i;
-                    label.innerText = o.name;
-
-                    div.appendChild(input);
-                    div.appendChild(label);
-                    container.appendChild(div);
-                });
+            const osraValueToSet = currentOsra || 'عام';
+            const optionExists = Array.from(select.options).some(opt => opt.value === osraValueToSet);
+            if (optionExists) {
+                select.value = osraValueToSet;
+            } else {
+                select.value = 'عام';
             }
 
             populateEditServantFasls(currentFasl);
@@ -5395,106 +5516,30 @@ window.onload = function() {
         }
 
         function populateEditServantFasls(currentFasl = null) {
-            let container = document.getElementById('editServantFaslsContainer');
-            if (!container) return;
-            
-            if (currentFasl && currentFasl.target) currentFasl = null;
-
-            let checkboxes = document.querySelectorAll('.edit-osra-checkbox:checked');
-            let selectedOsras = Array.from(checkboxes).map(cb => cb.value);
-
-            let preservedSelections = {};
-            container.querySelectorAll('select.edit-servant-fasl-select').forEach(sel => {
-                let osraKey = sel.getAttribute('data-osra');
-                if (osraKey) {
-                    preservedSelections[osraKey] = sel.value;
-                }
-            });
-
-            let initialFaslList = [];
-            if (currentFasl && typeof currentFasl === 'string') {
-                initialFaslList = currentFasl.split(',').map(f => f.trim()).filter(Boolean);
-            }
-
-            container.innerHTML = '';
+            let faslSelect = document.getElementById('editServantFasl');
             let osras = getPriestServices();
+            faslSelect.innerHTML = '<option value="">اختر الفصل</option>';
 
-            if (selectedOsras.length === 0) {
-                container.innerHTML = `
-                    <label class="form-label fw-bold">الفصل</label>
-                    <select class="form-select auth-input py-2 edit-servant-fasl-select" data-osra="all" disabled>
-                        <option value="">اختر الأسرة أولاً</option>
-                    </select>
-                `;
-                return;
+            let selectedOsra = document.getElementById('editServantOsraSelect').value;
+
+            if (selectedOsra && selectedOsra !== 'عام') {
+                let osra = osras.find(o => o.name === selectedOsra);
+                if (osra && osra.fasls) {
+                    osra.fasls.forEach(f => {
+                        let opt = document.createElement('option');
+                        opt.value = f;
+                        opt.innerText = f;
+                        if (f === currentFasl) opt.selected = true;
+                        faslSelect.appendChild(opt);
+                    });
+                }
             }
-
-            selectedOsras.forEach((selectedOsra, index) => {
-                let div = document.createElement('div');
-                div.className = 'mb-3';
-                
-                let label = document.createElement('label');
-                label.className = 'form-label fw-bold small text-muted';
-                label.innerText = selectedOsra === 'عام' ? 'الفصل (عام)' : `الفصل في أسرة "${selectedOsra}"`;
-                
-                let select = document.createElement('select');
-                select.className = 'form-select auth-input py-2 edit-servant-fasl-select';
-                select.setAttribute('data-osra', selectedOsra);
-                
-                select.innerHTML = '<option value="">عام / لا يوجد</option>';
-                
-                if (selectedOsra === 'عام') {
-                    let opt = document.createElement('option');
-                    opt.value = 'عام';
-                    opt.innerText = 'عام';
-                    select.appendChild(opt);
-                } else {
-                    let osraObj = osras.find(o => o.name === selectedOsra);
-                    if (osraObj && osraObj.fasls) {
-                        osraObj.fasls.forEach(f => {
-                            let opt = document.createElement('option');
-                            opt.value = f;
-                            opt.innerText = f;
-                            select.appendChild(opt);
-                        });
-                    }
-                }
-
-                let valToSet = preservedSelections[selectedOsra] || '';
-                if (!valToSet && initialFaslList.length > 0) {
-                    if (selectedOsra === 'عام') {
-                        valToSet = initialFaslList.includes('عام') ? 'عام' : '';
-                    } else {
-                        let osraObj = osras.find(o => o.name === selectedOsra);
-                        if (osraObj && osraObj.fasls) {
-                            valToSet = initialFaslList.find(f => osraObj.fasls.includes(f)) || '';
-                        }
-                    }
-                }
-
-                if (valToSet) {
-                    select.value = valToSet;
-                }
-
-                div.appendChild(label);
-                div.appendChild(select);
-                container.appendChild(div);
-            });
         }
 
         function saveServantEdit() {
             let username = document.getElementById('editServantUsername').value;
-            
-            let checkboxes = document.querySelectorAll('.edit-osra-checkbox:checked');
-            let osraList = Array.from(checkboxes).map(cb => cb.value);
-            let osra = osraList.join(', ') || 'عام';
-            
-            let faslSelects = document.querySelectorAll('select.edit-servant-fasl-select');
-            let faslList = Array.from(faslSelects)
-                .map(sel => sel.value)
-                .filter(val => val && val !== '');
-            
-            let fasl = faslList.join(', ') || 'عام';
+            let osra = document.getElementById('editServantOsraSelect').value || 'عام';
+            let fasl = document.getElementById('editServantFasl').value || 'عام';
 
             let servants = JSON.parse(localStorage.getItem('servants') || '[]');
             let index = servants.findIndex(s => s.username === username);
@@ -5506,9 +5551,7 @@ window.onload = function() {
 
                 var myModalEl = document.getElementById('editServantModal');
                 var modal = bootstrap.Modal.getInstance(myModalEl);
-                if (modal) {
-                    modal.hide();
-                }
+                modal.hide();
             }
         }
 
@@ -5529,16 +5572,6 @@ window.onload = function() {
 
         async function syncFromServer() {
             if (!isServerMode()) return;
-            if (!navigator.onLine) return;
-            
-            // معالجة التعديلات المعلقة لحماية البيانات المحلية من الاستبدال بالقديم
-            let queue = JSON.parse(localStorage.getItem('pending_deltas') || '[]');
-            if (queue.length > 0) {
-                await processPendingDeltas();
-                queue = JSON.parse(localStorage.getItem('pending_deltas') || '[]');
-                if (queue.length > 0) return;
-            }
-
             try {
                 const res = await fetch('/api/sync?t=' + Date.now());
                 const data = await res.json();
@@ -5653,16 +5686,6 @@ window.onload = function() {
         let isSyncing = false;
         async function syncWithServerRealtime(pusherData = null) {
             if (!isServerMode() || isSyncing) return;
-            if (!navigator.onLine) return;
-
-            // معالجة التعديلات المعلقة لحماية البيانات المحلية من الاستبدال بالقديم
-            let queue = JSON.parse(localStorage.getItem('pending_deltas') || '[]');
-            if (queue.length > 0) {
-                await processPendingDeltas();
-                queue = JSON.parse(localStorage.getItem('pending_deltas') || '[]');
-                if (queue.length > 0) return;
-            }
-
             isSyncing = true;
             try {
                 let serverVersions;
@@ -5826,41 +5849,6 @@ window.onload = function() {
             }
         }
 
-        let isProcessingQueue = false;
-        async function processPendingDeltas() {
-            if (isProcessingQueue || !navigator.onLine) return;
-            isProcessingQueue = true;
-            try {
-                let queue = JSON.parse(localStorage.getItem('pending_deltas') || '[]');
-                while (queue.length > 0) {
-                    let item = queue[0];
-                    const res = await fetch('/api/sync/delta', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ key: item.key, prev: item.prev, next: item.next })
-                    });
-                    const data = await res.json();
-                    if (data.success && data.merged) {
-                        originalSetItem.call(localStorage, item.key, JSON.stringify(data.merged));
-                        if (data.versions) {
-                            originalSetItem.call(localStorage, 'local_versions', JSON.stringify(data.versions));
-                        }
-                    }
-                    queue.shift();
-                    originalSetItem.call(localStorage, 'pending_deltas', JSON.stringify(queue));
-                }
-            } catch (err) {
-                console.error("Error processing pending deltas queue:", err);
-            } finally {
-                isProcessingQueue = false;
-            }
-        }
-
-        window.addEventListener('online', () => {
-            console.log("🌐 متصل بالإنترنت! جاري رفع البيانات المعلقة...");
-            processPendingDeltas();
-        });
-
         let activeDeltaSyncs = {};
         function customSetItem(key, value) {
             const keysToSync = ['priests', 'servants', 'waznat', 'priestServices', 'deadlines', 'chat_messages'];
@@ -5878,18 +5866,30 @@ window.onload = function() {
             const prev = prevValue ? JSON.parse(prevValue) : (key === 'deadlines' ? {} : []);
             const next = JSON.parse(value);
 
-            // إضافة التعديل لقائمة الانتظار الأوفلاين
-            let queue = JSON.parse(localStorage.getItem('pending_deltas') || '[]');
-            queue.push({ key, prev, next });
-            originalSetItem.call(localStorage, 'pending_deltas', JSON.stringify(queue));
+            activeDeltaSyncs[key] = (activeDeltaSyncs[key] || 0) + 1;
 
-            processPendingDeltas();
+            fetch('/api/sync/delta', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ key, prev, next })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.merged) {
+                    originalSetItem.call(localStorage, key, JSON.stringify(data.merged));
+                    if (data.versions) {
+                        originalSetItem.call(localStorage, 'local_versions', JSON.stringify(data.versions));
+                    }
+                }
+            })
+            .catch(err => console.error("Sync delta to server failed:", err))
+            .finally(() => {
+                activeDeltaSyncs[key] = Math.max(0, (activeDeltaSyncs[key] || 0) - 1);
+            });
         }
         localStorage.setItem = customSetItem;
 
         document.addEventListener("DOMContentLoaded", async () => {
-            // محاولة رفع أي بيانات معلقة أوفلاين تم حفظها سابقاً بمجرد تحميل الصفحة
-            processPendingDeltas();
             if ('serviceWorker' in navigator && isServerMode()) {
                 let refreshing = false;
                 navigator.serviceWorker.addEventListener('controllerchange', () => {
@@ -6103,67 +6103,28 @@ window.onload = function() {
         return lastCompleted;
     }
 
-    function getDeadlineDescription(dl) {
-        if (dl.scope === 'all') {
-            return 'موعد الافتقاد العام لجميع الخدمات';
-        }
-        if (dl.scope === 'osra') {
-            return `موعد الافتقاد لأسرة "${dl.scopeValue}"`;
-        }
-        if (dl.scope === 'fasl') {
-            return `موعد الافتقاد لفصل "${dl.scopeValue}"`;
-        }
-        if (dl.scope === 'servant') {
-            let servants = JSON.parse(localStorage.getItem('servants') || '[]');
-            let s = servants.find(srv => srv.username === dl.scopeValue);
-            let name = s ? (s.fullName || s.username) : dl.scopeValue;
-            return `موعد الافتقاد للخادم "${name}"`;
-        }
-        return 'موعد الافتقاد';
-    }
-
     function checkAndShowDeadlineRenewal() {
         const curr = JSON.parse(localStorage.getItem('currentPriest'));
         if (!curr) return;
 
         const priestUser = curr.username;
-        const deadlineList = getPriestDeadlinesList(priestUser);
-        if (deadlineList.length === 0) return;
+        const osras = getPriestServices();
+        if (osras.length === 0) return;
 
-        let prompted = {};
-        try {
-            prompted = JSON.parse(localStorage.getItem(`prompted_renewals_${priestUser}`) || '{}');
-        } catch (e) {}
+        const lastRenewedStr = localStorage.getItem(`lastRenewed_${priestUser}`);
+        const lastRenewed = lastRenewedStr ? new Date(lastRenewedStr) : new Date(0);
 
-        let targetDl = null;
-        for (const dl of deadlineList) {
-            if (isDeadlinePassed(dl)) {
-                const promptKey = `${dl.id}_${dl.datetime}`;
-                if (!prompted[promptKey]) {
-                    targetDl = dl;
-                    break;
-                }
+        let shouldShow = false;
+        for (const osra of osras) {
+            if (!osra.serviceDay) continue;
+            const lastCompletedDate = getLastCompletedServiceDate(osra.serviceDay);
+            if (lastCompletedDate && lastCompletedDate > lastRenewed) {
+                shouldShow = true;
+                break;
             }
         }
 
-        if (targetDl) {
-            const promptKey = `${targetDl.id}_${targetDl.datetime}`;
-            prompted[promptKey] = true;
-            localStorage.setItem(`prompted_renewals_${priestUser}`, JSON.stringify(prompted));
-
-            const desc = getDeadlineDescription(targetDl);
-            const modalBody = document.querySelector('#deadlineRenewalModal .modal-body');
-            if (modalBody) {
-                modalBody.innerHTML = `
-                    <p class="fw-bold mb-3">انتهى ${desc}!</p>
-                    <p>هل تريد تجديد الموعد تلقائياً للأسبوع القادم وتصفير حالات الافتقاد التابعة له؟</p>
-                    <div class="d-flex justify-content-around mt-4">
-                        <button type="button" class="btn btn-primary px-4 py-2 fw-bold" onclick="autoRenewSpecificDeadline('${targetDl.id}')">نعم، تجديد تلقائي</button>
-                        <button type="button" class="btn btn-outline-secondary px-4 py-2 fw-bold" onclick="redirectSpecificDeadlinePage('${targetDl.id}')">لا، سأغير الموعد</button>
-                    </div>
-                `;
-            }
-
+        if (shouldShow) {
             const modalEl = document.getElementById('deadlineRenewalModal');
             if (modalEl) {
                 const modal = new bootstrap.Modal(modalEl);
@@ -6172,59 +6133,51 @@ window.onload = function() {
         }
     }
 
-    function autoRenewSpecificDeadline(id) {
-        const priestUser = JSON.parse(localStorage.getItem("currentPriest"))?.username;
-        if (!priestUser) return;
+    function resetVisitationStatuses(priestUser) {
+        let waznat = JSON.parse(localStorage.getItem('waznat') || '[]');
+        let servants = JSON.parse(localStorage.getItem('servants') || '[]');
+        let myServantNames = servants.filter(s => s.priestUser === priestUser).map(s => s.username);
         
-        let deadlines = getPriestDeadlinesList(priestUser);
-        let dlIndex = deadlines.findIndex(d => d.id === id || d.id == id);
-        if (dlIndex === -1) return;
-
-        let dl = deadlines[dlIndex];
-        
-        const nextWeek = new Date(dl.datetime);
-        nextWeek.setDate(nextWeek.getDate() + 7);
-        dl.datetime = nextWeek.toISOString().slice(0, 16);
-        dl.applied = false;
-
-        resetVisitationStatusesForDeadline(priestUser, dl.scope, dl.scopeValue);
-        savePriestDeadlinesList(priestUser, deadlines);
-        
-        let modalEl = document.getElementById('deadlineRenewalModal');
-        let modal = bootstrap.Modal.getInstance(modalEl);
-        if (modal) {
-            modal.hide();
-        }
-        alert("تم تجديد الموعد وتصفير حالات الافتقاد التابعة له للأسبوع القادم!");
-        
-        setTimeout(checkAndShowDeadlineRenewal, 500);
+        waznat.forEach(w => {
+            if (myServantNames.includes(w.servantUser)) {
+                w.lastCallResult = 'لم يفتقد';
+                w.timestamp = null;
+            }
+        });
+        localStorage.setItem('waznat', JSON.stringify(waznat));
     }
 
-    function redirectSpecificDeadlinePage(id) {
+    function autoRenewDeadlines() {
+        const priestUser = JSON.parse(localStorage.getItem("currentPriest"))?.username;
+        if (!priestUser) return;
+        
+        let deadlines = getPriestDeadlinesList(priestUser);
+        
+        let updatedDeadlines = deadlines.map(dl => {
+            const nextWeek = new Date(dl.datetime);
+            nextWeek.setDate(nextWeek.getDate() + 7);
+            return { ...dl, datetime: nextWeek.toISOString().slice(0, 16), applied: false };
+        });
+
+        resetVisitationStatuses(priestUser);
+        savePriestDeadlinesList(priestUser, updatedDeadlines);
+        localStorage.setItem(`lastRenewed_${priestUser}`, new Date().toISOString().split('T')[0]);
+        
+        bootstrap.Modal.getInstance(document.getElementById('deadlineRenewalModal')).hide();
+        alert("تم تجديد المواعيد وتصفير حالات الافتقاد للأسبوع القادم!");
+    }
+
+    function redirectToDeadlinePage() {
         const priestUser = JSON.parse(localStorage.getItem("currentPriest"))?.username;
         if (!priestUser) return;
 
-        let deadlines = getPriestDeadlinesList(priestUser);
-        let dlIndex = deadlines.findIndex(d => d.id === id || d.id == id);
-        if (dlIndex === -1) return;
-
-        let dl = deadlines[dlIndex];
-
-        resetVisitationStatusesForDeadline(priestUser, dl.scope, dl.scopeValue);
-
-        deadlines.splice(dlIndex, 1);
-        savePriestDeadlinesList(priestUser, deadlines);
-
-        let modalEl = document.getElementById('deadlineRenewalModal');
-        let modal = bootstrap.Modal.getInstance(modalEl);
-        if (modal) {
-            modal.hide();
-        }
-
+        resetVisitationStatuses(priestUser);
+        savePriestDeadlinesList(priestUser, []);
+        localStorage.setItem(`lastRenewed_${priestUser}`, new Date().toISOString().split('T')[0]);
+        
+        bootstrap.Modal.getInstance(document.getElementById('deadlineRenewalModal')).hide();
         switchTab('deadlineTab', document.querySelector('[onclick*="deadlineTab"]'));
-        alert("تم تصفير حالات الافتقاد وحذف الموعد المنتهي، تفضل بإنشاء موعد جديد.");
-
-        setTimeout(checkAndShowDeadlineRenewal, 500);
+        alert("تم تصفير المواعيد وحالات الافتقاد، تفضل بإنشاء موعد جديد.");
     }
 
     if (typeof enterDashboard === 'function') {
