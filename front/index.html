@@ -4913,7 +4913,7 @@ window.onload = function() {
                     waznat.forEach(w => {
                         if (w.servantUser === servant.username) {
                             let isLate = w.lastCallResult === 'رد' && w.timestamp && (new Date(w.timestamp) >= deadlineTime);
-                            let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'لم يفتقد';
+                            let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'لم يرد' && w.lastCallResult !== 'لم يفتقد';
                             
                             if (isLate || isNotCompleted) {
                                 w.lastCallResult = 'لم يفتقد';

@@ -1284,7 +1284,7 @@
             waznat.forEach(w => {
                 if (w.servantUser === currServant.username) {
                     let isLate = w.lastCallResult === 'رد' && w.timestamp && (new Date(w.timestamp) >= deadlineTime);
-                    let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'لم يفتقد' && w.lastCallResult !== 'لم يفتقد بعد';
+                    let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'لم يرد' && w.lastCallResult !== 'لم يفتقد' && w.lastCallResult !== 'لم يفتقد بعد';
                     
                     if (isLate || isNotCompleted) {
                         w.lastCallResult = 'لم يفتقد';
