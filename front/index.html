@@ -417,7 +417,7 @@
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label fw-bold small">واتساب الخادم</label>
+                            <label class="form-label fw-bold small">واتساب الخادم <span class="text-danger">*</span></label>
                             <input type="text" id="createServantWhatsapp" class="form-control auth-input py-2"
                                 placeholder="01xxxxxxxxx" dir="ltr">
                         </div>
@@ -569,7 +569,8 @@
                         </div>
                     </div>
                 </div>
-                </div> <!-- /#servantsMainView -->
+            </div> <!-- Close assignServantsModal -->
+            </div> <!-- Close servantsMainView -->
 
                 <!-- Servant Profile Editor View -->
                 <div id="servantProfileEditorView" class="card p-4 fade-in mt-4 d-none">
@@ -1772,15 +1773,9 @@
             const whatsapp = document.getElementById('createServantWhatsapp').value.trim();
             const msg = document.getElementById('createServantMsg');
 
-            if (!fullName) {
+            if (!fullName || !su || !sp || !whatsapp) {
                 msg.className = "mt-3 fw-bold text-danger";
-                msg.innerText = "الرجاء إدخال الاسم الكامل للخادم أولاً!";
-                msg.classList.remove('d-none');
-                return;
-            }
-            if (!su || !sp) {
-                msg.className = "mt-3 fw-bold text-danger";
-                msg.innerText = "الرجاء إدخال username وكلمة المرور أولاً!";
+                msg.innerText = "الرجاء إكمال كافة الخانات المطلوبة!";
                 msg.classList.remove('d-none');
                 return;
             }
@@ -1794,13 +1789,6 @@
                 return;
             }
 
-            if (!whatsapp) {
-                msg.className = "mt-3 fw-bold text-danger";
-                msg.innerText = "الرجاء إدخال رقم الواتساب!";
-                msg.classList.remove('d-none');
-                return;
-            }
-
             // Check if username already exists locally
             let servants = JSON.parse(localStorage.getItem('servants') || '[]');
             if (servants.find(s => s.username === su)) {
@@ -1810,20 +1798,31 @@
                 return;
             }
 
-            // Open WhatsApp synchronously to prevent popup blocker blocking it
+            // Open WhatsApp
             openWhatsAppChat(whatsapp, buildServantWhatsAppMessage(su, sp));
 
-            // Save the account in the background (which is async and will sync to server)
+            // Save the account in the background
             createServantAccount(true);
         }
 
         function handleCreateServantClick() {
+            const fullName = document.getElementById('createServantFullName').value.trim();
+            const su = document.getElementById('createServantUser').value.trim();
+            const sp = document.getElementById('createServantPass').value;
+            const osraSelect = document.getElementById('createServantOsraSelect');
+            const osra = osraSelect ? osraSelect.value : '';
             const whatsapp = document.getElementById('createServantWhatsapp').value.trim();
-            if (whatsapp) {
-                sendServantWhatsAppInvite();
-            } else {
-                createServantAccount(false);
+            const msg = document.getElementById('createServantMsg');
+
+            if (!fullName || !su || !sp || !osra || !whatsapp) {
+                msg.className = "mt-3 fw-bold text-danger";
+                msg.innerText = "الرجاء إكمال كافة الخانات المطلوبة!";
+                msg.classList.remove('d-none');
+                setTimeout(() => msg.classList.add('d-none'), 3000);
+                return;
             }
+
+            sendServantWhatsAppInvite();
         }
 
         function createServantAccount(silent) {
@@ -1833,81 +1832,48 @@
             
             const osraSelect = document.getElementById('createServantOsraSelect');
             const osra = osraSelect ? osraSelect.value : 'عام';
-            const fasl = document.getElementById('createServantFasl').value || 'عام';
+            const fasl = 'عام';
             const whatsapp = document.getElementById('createServantWhatsapp').value.trim();
             const msg = document.getElementById('createServantMsg');
 
-            if (!fullName) {
+            if (!fullName || !su || !sp || !osra || !whatsapp) {
                 if (!silent) {
                     msg.className = "mt-3 fw-bold text-danger";
-                    msg.innerText = "الرجاء إدخال الاسم الكامل للخادم!";
+                    msg.innerText = "الرجاء إكمال كافة الخانات المطلوبة!";
                     msg.classList.remove('d-none');
                 }
                 return Promise.resolve(false);
             }
 
-            if (!su) {
+            let servants = JSON.parse(localStorage.getItem('servants') || '[]');
+            let curr = JSON.parse(localStorage.getItem('currentPriest'));
+            if (servants.find(s => s.username === su)) {
                 if (!silent) {
-                    msg.className = "mt-3 fw-bold text-danger";
-                    msg.innerText = "الرجاء إدخال اسم المستخدم للخادم!";
-                    msg.classList.remove('d-none');
-                }
-                return Promise.resolve(false);
-            }
-
-            if (!sp) {
-                if (!silent) {
-                    msg.className = "mt-3 fw-bold text-danger";
-                    msg.innerText = "الرجاء إدخال كلمة المرور للخادم!";
-                    msg.classList.remove('d-none');
-                }
-                return Promise.resolve(false);
-            }
-
-            if (!osra || osra === '') {
-                if (!silent) {
-                    msg.className = "mt-3 fw-bold text-danger";
-                    msg.innerText = "الرجاء اختيار الأسرة!";
-                    msg.classList.remove('d-none');
-                }
-                return Promise.resolve(false);
-            }
-
-            if (su && sp) {
-                let servants = JSON.parse(localStorage.getItem('servants') || '[]');
-                let curr = JSON.parse(localStorage.getItem('currentPriest'));
-                if (servants.find(s => s.username === su)) {
                     msg.className = "mt-3 fw-bold text-danger";
                     msg.innerText = "اسم المستخدم موجود مسبقاً! الرجاء اختيار اسم مستخدم آخر.";
                     msg.classList.remove('d-none');
-                    return Promise.resolve(false);
-                } else {
-                    servants.push({ username: su, fullName: fullName, password: sp, priestUser: curr.username, osra: osra, fasl: fasl, whatsapp: whatsapp });
-                    let p = localStorage.setItem('servants', JSON.stringify(servants));
-                    if (!silent) {
-                        msg.className = "mt-3 fw-bold text-success";
-                        msg.innerText = "تم إنشاء حساب الخادم بنجاح! يمكنه الآن تسجيل الدخول.";
-                        msg.classList.remove('d-none');
-                    }
-                    document.getElementById('createServantFullName').value = '';
-                    document.getElementById('createServantUser').value = '';
-                    document.getElementById('createServantPass').value = '';
-                    document.getElementById('createServantWhatsapp').value = '';
-                    
-                    if (osraSelect) osraSelect.value = '';
-
-                    loadServantsTable();
-                    updateDashboardStats();
-                    refreshNotifications();
-                    return p || Promise.resolve(true);
                 }
-                if (!silent) setTimeout(() => msg.classList.add('d-none'), 3000);
-            } else if (!silent) {
-                msg.className = "mt-3 fw-bold text-danger";
-                msg.innerText = "الرجاء إدخال اسم المستخدم وكلمة المرور!";
-                msg.classList.remove('d-none');
+                return Promise.resolve(false);
+            } else {
+                servants.push({ username: su, fullName: fullName, password: sp, priestUser: curr.username, osra: osra, fasl: fasl, whatsapp: whatsapp });
+                let p = localStorage.setItem('servants', JSON.stringify(servants));
+                if (!silent) {
+                    msg.className = "mt-3 fw-bold text-success";
+                    msg.innerText = "تم إنشاء حساب الخادم بنجاح! يمكنه الآن تسجيل الدخول.";
+                    msg.classList.remove('d-none');
+                }
+                document.getElementById('createServantFullName').value = '';
+                document.getElementById('createServantUser').value = '';
+                document.getElementById('createServantPass').value = '';
+                document.getElementById('createServantWhatsapp').value = '';
+                
+                if (osraSelect) osraSelect.value = '';
+
+                loadServantsTable();
+                updateDashboardStats();
+                refreshNotifications();
+                return p || Promise.resolve(true);
             }
-            return Promise.resolve(false);
         }
 
         function copyServantLink() {
