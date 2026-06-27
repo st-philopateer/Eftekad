@@ -695,7 +695,7 @@
                         </div>
                         <div class="col-md-3 scope-select-hidden" id="deadlineScopeOsraWrap">
                             <label class="form-label fw-bold">اختر الأسرة</label>
-                            <select id="deadlineScopeOsra" class="form-select auth-input" onchange="updateDeadlineFaslOptions()"></select>
+                            <select id="deadlineScopeOsra" class="form-select auth-input" onchange="updateDeadlineFaslOrServantOptions()"></select>
                         </div>
                         <div class="col-md-3" id="deadlineScopeValueWrap">
                             <label class="form-label fw-bold">تحديد النطاق</label>
@@ -2492,7 +2492,7 @@
                 osraWrap.classList.add('scope-select-hidden');
                 valueWrap.classList.add('scope-select-hidden');
                 selectEl.innerHTML = '';
-            } else if (scope === 'fasl') {
+            } else if (scope === 'fasl' || scope === 'servant') {
                 osraWrap.classList.remove('scope-select-hidden');
                 valueWrap.classList.remove('scope-select-hidden');
                 
@@ -2505,13 +2505,15 @@
                 
                 selectEl.innerHTML = '<option value="">اختر الأسرة أولاً</option>';
             } else {
+                // 'osra'
                 osraWrap.classList.add('scope-select-hidden');
                 valueWrap.classList.remove('scope-select-hidden');
                 populateScopeSelect(selectEl, scope, 'اختر من القائمة');
             }
         }
 
-        function updateDeadlineFaslOptions() {
+        function updateDeadlineFaslOrServantOptions() {
+            const scope = document.getElementById('deadlineScope').value;
             const osraVal = document.getElementById('deadlineScopeOsra').value;
             const selectEl = document.getElementById('deadlineScopeValue');
             if (!osraVal) {
@@ -2519,14 +2521,31 @@
                 return;
             }
 
-            const osras = getPriestServices();
-            const selectedOsra = osras.find(o => o.name === osraVal);
-            const classes = selectedOsra ? selectedOsra.fasls : [];
+            if (scope === 'fasl') {
+                const osras = getPriestServices();
+                const selectedOsra = osras.find(o => o.name === osraVal);
+                const classes = selectedOsra ? selectedOsra.fasls : [];
 
-            selectEl.innerHTML = '<option value="">اختر الفصل</option>';
-            classes.forEach(f => {
-                selectEl.innerHTML += `<option value="${f}">${f}</option>`;
-            });
+                selectEl.innerHTML = '<option value="">اختر الفصل</option>';
+                classes.forEach(f => {
+                    selectEl.innerHTML += `<option value="${f}">${f}</option>`;
+                });
+            } else if (scope === 'servant') {
+                const curr = JSON.parse(localStorage.getItem('currentPriest'));
+                const allServants = JSON.parse(localStorage.getItem('servants') || '[]');
+                const myServants = allServants.filter(s => s.priestUser === curr.username);
+                
+                const familyServants = myServants.filter(s => {
+                    if (!s.osra) return false;
+                    return s.osra.split(',').map(o => o.trim()).includes(osraVal);
+                });
+
+                selectEl.innerHTML = '<option value="">اختر الخادم</option>';
+                familyServants.forEach(s => {
+                    const displayName = s.fullName || s.username;
+                    selectEl.innerHTML += `<option value="${s.username}">${displayName}</option>`;
+                });
+            }
         }
 
         function toggleReportSource() {
