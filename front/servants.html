@@ -1747,14 +1747,20 @@
                 }
 
                 let editDeleteHtml = '';
-                if (isMe && !msg.isDeleted) {
+                if (!msg.isDeleted) {
+                    if (isMe) {
+                        editDeleteHtml = `
+                            <span class="ms-2" style="cursor: pointer; opacity: 0.6;" onclick="startInlineEdit(${msg.id})"><i class="fas fa-pencil-alt text-muted" title="تعديل"></i></span>
+                            <span class="ms-1" style="cursor: pointer; opacity: 0.6;" onclick="showDeleteModal(${msg.id}, true)"><i class="fas fa-trash text-danger" title="حذف"></i></span>
+                        `;
+                    } else {
+                        editDeleteHtml = `
+                            <span class="ms-1" style="cursor: pointer; opacity: 0.6;" onclick="showDeleteModal(${msg.id}, false)"><i class="fas fa-trash text-danger" title="حذف"></i></span>
+                        `;
+                    }
+                } else {
                     editDeleteHtml = `
-                        <span class="ms-2" style="cursor: pointer; opacity: 0.6;" onclick="startInlineEdit(${msg.id})"><i class="fas fa-pencil-alt text-muted" title="تعديل"></i></span>
-                        <span class="ms-1" style="cursor: pointer; opacity: 0.6;" onclick="showDeleteModal(${msg.id}, true)"><i class="fas fa-trash text-danger" title="حذف"></i></span>
-                    `;
-                } else if (!isMe && !msg.isDeleted) {
-                    editDeleteHtml = `
-                        <span class="ms-1" style="cursor: pointer; opacity: 0.6;" onclick="showDeleteModal(${msg.id}, false)"><i class="fas fa-trash text-danger" title="حذف"></i></span>
+                        <span class="ms-1" style="cursor: pointer; opacity: 0.6;" onclick="showDeleteModal(${msg.id}, false)"><i class="fas fa-trash text-danger" title="حذف لدي"></i></span>
                     `;
                 }
 

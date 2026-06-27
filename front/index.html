@@ -693,6 +693,10 @@
                                 <option value="servant">خادم محدد</option>
                             </select>
                         </div>
+                        <div class="col-md-3 scope-select-hidden" id="deadlineScopeOsraWrap">
+                            <label class="form-label fw-bold">اختر الأسرة</label>
+                            <select id="deadlineScopeOsra" class="form-select auth-input" onchange="updateDeadlineFaslOptions()"></select>
+                        </div>
                         <div class="col-md-3" id="deadlineScopeValueWrap">
                             <label class="form-label fw-bold">تحديد النطاق</label>
                             <select id="deadlineScopeValue" class="form-select auth-input scope-select-hidden"></select>
@@ -2480,10 +2484,49 @@
 
         function updateDeadlineScopeOptions() {
             const scope = document.getElementById('deadlineScope').value;
-            populateScopeSelect(document.getElementById('deadlineScopeValue'), scope, 'اختر من القائمة');
-            const wrap = document.getElementById('deadlineScopeValueWrap');
-            if (scope === 'all') wrap.classList.add('scope-select-hidden');
-            else wrap.classList.remove('scope-select-hidden');
+            const osraWrap = document.getElementById('deadlineScopeOsraWrap');
+            const valueWrap = document.getElementById('deadlineScopeValueWrap');
+            const selectEl = document.getElementById('deadlineScopeValue');
+
+            if (scope === 'all') {
+                osraWrap.classList.add('scope-select-hidden');
+                valueWrap.classList.add('scope-select-hidden');
+                selectEl.innerHTML = '';
+            } else if (scope === 'fasl') {
+                osraWrap.classList.remove('scope-select-hidden');
+                valueWrap.classList.remove('scope-select-hidden');
+                
+                const osraSelect = document.getElementById('deadlineScopeOsra');
+                const osras = getPriestServices();
+                osraSelect.innerHTML = '<option value="">اختر الأسرة</option>';
+                osras.forEach(o => {
+                    osraSelect.innerHTML += `<option value="${o.name}">${o.name}</option>`;
+                });
+                
+                selectEl.innerHTML = '<option value="">اختر الأسرة أولاً</option>';
+            } else {
+                osraWrap.classList.add('scope-select-hidden');
+                valueWrap.classList.remove('scope-select-hidden');
+                populateScopeSelect(selectEl, scope, 'اختر من القائمة');
+            }
+        }
+
+        function updateDeadlineFaslOptions() {
+            const osraVal = document.getElementById('deadlineScopeOsra').value;
+            const selectEl = document.getElementById('deadlineScopeValue');
+            if (!osraVal) {
+                selectEl.innerHTML = '<option value="">اختر الأسرة أولاً</option>';
+                return;
+            }
+
+            const osras = getPriestServices();
+            const selectedOsra = osras.find(o => o.name === osraVal);
+            const classes = selectedOsra ? selectedOsra.fasls : [];
+
+            selectEl.innerHTML = '<option value="">اختر الفصل</option>';
+            classes.forEach(f => {
+                selectEl.innerHTML += `<option value="${f}">${f}</option>`;
+            });
         }
 
         function toggleReportSource() {
@@ -3226,14 +3269,20 @@ window.onload = function() {
                 }
 
                 let editDeleteHtml = '';
-                if (isMe && !msg.isDeleted) {
+                if (!msg.isDeleted) {
+                    if (isMe) {
+                        editDeleteHtml = `
+                            <span class="ms-2" style="cursor: pointer; opacity: 0.6;" onclick="startInlineEdit(${msg.id})"><i class="fas fa-pencil-alt text-muted" title="تعديل"></i></span>
+                            <span class="ms-1" style="cursor: pointer; opacity: 0.6;" onclick="showDeleteModal(${msg.id}, true)"><i class="fas fa-trash text-danger" title="حذف"></i></span>
+                        `;
+                    } else {
+                        editDeleteHtml = `
+                            <span class="ms-1" style="cursor: pointer; opacity: 0.6;" onclick="showDeleteModal(${msg.id}, false)"><i class="fas fa-trash text-danger" title="حذف"></i></span>
+                        `;
+                    }
+                } else {
                     editDeleteHtml = `
-                        <span class="ms-2" style="cursor: pointer; opacity: 0.6;" onclick="startInlineEdit(${msg.id})"><i class="fas fa-pencil-alt text-muted" title="تعديل"></i></span>
-                        <span class="ms-1" style="cursor: pointer; opacity: 0.6;" onclick="showDeleteModal(${msg.id}, true)"><i class="fas fa-trash text-danger" title="حذف"></i></span>
-                    `;
-                } else if (!isMe && !msg.isDeleted) {
-                    editDeleteHtml = `
-                        <span class="ms-1" style="cursor: pointer; opacity: 0.6;" onclick="showDeleteModal(${msg.id}, false)"><i class="fas fa-trash text-danger" title="حذف"></i></span>
+                        <span class="ms-1" style="cursor: pointer; opacity: 0.6;" onclick="showDeleteModal(${msg.id}, false)"><i class="fas fa-trash text-danger" title="حذف لدي"></i></span>
                     `;
                 }
 
