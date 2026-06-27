@@ -468,8 +468,56 @@
                         </table>
                     </div>
                 </div>
+                </div> <!-- Close servantsMainView -->
 
-            </div>
+<!-- Servant Profile Editor View -->
+                <div id="servantProfileEditorView" class="card p-4 fade-in mt-4 d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                        <h5 class="fw-bold mb-0 text-primary"><i class="fas fa-user-edit me-2"></i> تعديل بيانات وخدمة الخادم</h5>
+                        <button class="btn btn-outline-secondary btn-sm fw-bold" onclick="closeServantProfileEditor()">
+                            <i class="fas fa-arrow-right me-1"></i> عودة للقائمة
+                        </button>
+                    </div>
+
+                    <input type="hidden" id="editServantUsername">
+                    <div class="row g-4 text-start">
+                        <!-- Left column: Servant Info -->
+                        <div class="col-md-4 border-end">
+                            <h6 class="fw-bold text-primary mb-3"><i class="fas fa-info-circle me-1"></i> معلومات الخادم</h6>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-muted">الاسم الكامل</label>
+                                <input type="text" id="editServantFullName" class="form-control auth-input py-2" placeholder="الاسم الكامل للخادم">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-muted">اسم المستخدم (الحساب)</label>
+                                <input type="text" id="editServantUsernameDisplay" class="form-control auth-input py-2" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-muted">رقم الهاتف (واتساب)</label>
+                                <input type="text" id="editServantWhatsapp" class="form-control auth-input py-2" placeholder="رقم الهاتف">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-muted">البريد الإلكتروني</label>
+                                <input type="text" id="editServantEmail" class="form-control auth-input py-2" placeholder="البريد الإلكتروني">
+                            </div>
+                        </div>
+
+                        <!-- Right column: Family & Class assignment -->
+                        <div class="col-md-8">
+                            <h6 class="fw-bold text-primary mb-3"><i class="fas fa-layer-group me-1"></i> تحديد الأسر والفصول المشترك بها</h6>
+                            <div id="editServantOsrasClassesContainer" class="row g-3" style="max-height: 400px; overflow-y: auto;">
+                                <!-- Will be dynamically generated here -->
+                            </div>
+                            
+                            <div class="mt-4 pt-3 border-top text-end">
+                                <button class="btn btn-outline-secondary px-4 py-2 fw-bold me-2" onclick="closeServantProfileEditor()">إلغاء</button>
+                                <button class="btn btn-primary px-5 py-2 fw-bold" onclick="saveServantProfileEdit()">حفظ التعديلات</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div> <!-- Closes servantsTab -->
 
             <div id="manageOsrasTab" class="tab-content">
                 <div class="row g-4">
@@ -569,55 +617,9 @@
                         </div>
                     </div>
                 </div>
-            </div> <!-- Close assignServantsModal -->
-            </div> <!-- Close servantsMainView -->
+            </div>
 
-                <!-- Servant Profile Editor View -->
-                <div id="servantProfileEditorView" class="card p-4 fade-in mt-4 d-none">
-                    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-                        <h5 class="fw-bold mb-0 text-primary"><i class="fas fa-user-edit me-2"></i> تعديل بيانات وخدمة الخادم</h5>
-                        <button class="btn btn-outline-secondary btn-sm fw-bold" onclick="closeServantProfileEditor()">
-                            <i class="fas fa-arrow-right me-1"></i> عودة للقائمة
-                        </button>
-                    </div>
-
-                    <input type="hidden" id="editServantUsername">
-                    <div class="row g-4 text-start">
-                        <!-- Left column: Servant Info -->
-                        <div class="col-md-4 border-end">
-                            <h6 class="fw-bold text-primary mb-3"><i class="fas fa-info-circle me-1"></i> معلومات الخادم</h6>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold small text-muted">الاسم الكامل</label>
-                                <input type="text" id="editServantFullName" class="form-control auth-input py-2" placeholder="الاسم الكامل للخادم">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold small text-muted">اسم المستخدم (الحساب)</label>
-                                <input type="text" id="editServantUsernameDisplay" class="form-control auth-input py-2" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold small text-muted">رقم الهاتف (واتساب)</label>
-                                <input type="text" id="editServantWhatsapp" class="form-control auth-input py-2" placeholder="رقم الهاتف">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold small text-muted">البريد الإلكتروني</label>
-                                <input type="text" id="editServantEmail" class="form-control auth-input py-2" placeholder="البريد الإلكتروني">
-                            </div>
-                        </div>
-
-                        <!-- Right column: Family & Class assignment -->
-                        <div class="col-md-8">
-                            <h6 class="fw-bold text-primary mb-3"><i class="fas fa-layer-group me-1"></i> تحديد الأسر والفصول المشترك بها</h6>
-                            <div id="editServantOsrasClassesContainer" class="row g-3" style="max-height: 400px; overflow-y: auto;">
-                                <!-- Will be dynamically generated here -->
-                            </div>
-                            
-                            <div class="mt-4 pt-3 border-top text-end">
-                                <button class="btn btn-outline-secondary px-4 py-2 fw-bold me-2" onclick="closeServantProfileEditor()">إلغاء</button>
-                                <button class="btn btn-primary px-5 py-2 fw-bold" onclick="saveServantProfileEdit()">حفظ التعديلات</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                
 
             <!-- Edit Osra Modal -->
             <div class="modal fade" id="editOsraModal" tabindex="-1" aria-hidden="true">
