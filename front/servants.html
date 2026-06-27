@@ -1273,14 +1273,7 @@
             const passed = new Date() >= new Date(applicable.datetime);
             if (!passed) return;
             let dbDl = deadlineList.find(d => d.id === applicable.id);
-            if (dbDl) {
-                if (dbDl.applied) {
-                    if (deadlineListChanged) {
-                        deadlines[me.priestUser] = deadlineList;
-                        localStorage.setItem('deadlines', JSON.stringify(deadlines));
-                    }
-                    return;
-                }
+            if (dbDl && !dbDl.applied) {
                 dbDl.applied = true;
                 deadlineListChanged = true;
             }
@@ -1291,10 +1284,10 @@
             waznat.forEach(w => {
                 if (w.servantUser === currServant.username) {
                     let isLate = w.lastCallResult === 'رد' && w.timestamp && (new Date(w.timestamp) >= deadlineTime);
-                    let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'الخادم لم يفتقد' && w.lastCallResult !== 'لم يفتقد' && w.lastCallResult !== 'لم يفتقد بعد';
+                    let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'لم يفتقد' && w.lastCallResult !== 'لم يفتقد بعد';
                     
                     if (isLate || isNotCompleted) {
-                        w.lastCallResult = 'الخادم لم يفتقد';
+                        w.lastCallResult = 'لم يفتقد';
                         w.timestamp = new Date().toISOString();
                         changed = true;
                     }

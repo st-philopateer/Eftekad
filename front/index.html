@@ -2091,7 +2091,7 @@
                         <td class="text-secondary fw-bold">${waznaOsraText}</td>
                         <td class="small">${waznaFaslText}</td>
                         <td>
-<span class="badge ${w.lastCallResult === 'رد' ? 'bg-success' : w.lastCallResult === 'لم يرد' ? 'bg-warning text-dark' : w.lastCallResult === 'لم يفتقد' ? 'bg-danger' : 'bg-secondary'}">
+<span class="badge ${w.lastCallResult === 'رد' ? 'bg-success' : w.lastCallResult === 'لم يرد' ? 'bg-warning text-dark' : (w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'الخادم لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد') ? 'bg-danger' : 'bg-secondary'}">
     ${w.lastCallResult}
 </span>
 
@@ -4904,10 +4904,7 @@ window.onload = function() {
                 const passed = new Date() >= new Date(applicable.datetime);
                 if (passed) {
                     let dbDl = deadlineList.find(d => d.id === applicable.id);
-                    if (dbDl) {
-                        if (dbDl.applied) {
-                            return; // already applied, skip resetting
-                        }
+                    if (dbDl && !dbDl.applied) {
                         dbDl.applied = true;
                         deadlinesChanged = true;
                     }
