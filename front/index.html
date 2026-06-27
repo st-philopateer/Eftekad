@@ -870,8 +870,18 @@
                                 <option value="yearly">سنوي</option>
                             </select>
                         </div>
+                        <!-- Year Select (shown for yearly) -->
+                        <div class="col-md-2 scope-select-hidden" id="reportYearSelectWrap">
+                            <label class="form-label fw-bold">اختر السنة</label>
+                            <select id="reportYearSelect" class="form-select auth-input" onchange="handleReportYearChange()"></select>
+                        </div>
+                        <!-- Month Select (shown for monthly or yearly) -->
+                        <div class="col-md-2 scope-select-hidden" id="reportMonthSelectWrap">
+                            <label class="form-label fw-bold">اختر الشهر</label>
+                            <select id="reportMonthSelect" class="form-select auth-input" onchange="handleReportMonthChange()"></select>
+                        </div>
                         <div class="col-md-3" id="reportPeriodValueWrap">
-                            <label class="form-label fw-bold">اختر الفترة</label>
+                            <label class="form-label fw-bold">اختر الأسبوع</label>
                             <select id="reportPeriodValue" class="form-select auth-input" onchange="generateReport()"></select>
                         </div>
                         <div class="col-md-3">
@@ -2456,43 +2466,119 @@
             return years;
         }
 
+        function getWeeksForMonth(year, month, serviceDayName) {
+            const weeks = [];
+            const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const targetDayIndex = daysOfWeek.indexOf(serviceDayName);
+            if (targetDayIndex === -1) return weeks;
+
+            const numDays = new Date(year, month, 0).getDate();
+            for (let day = 1; day <= numDays; day++) {
+                const date = new Date(year, month - 1, day);
+                if (date.getDay() === targetDayIndex) {
+                    const end = new Date(date);
+                    end.setHours(23, 59, 59, 999);
+
+                    const start = new Date(end);
+                    start.setDate(end.getDate() - 7);
+                    start.setHours(0, 0, 0, 0);
+
+                    weeks.push({
+                        start: start.toISOString().split('T')[0],
+                        end: end.toISOString().split('T')[0],
+                        label: `من ${start.getDate()}/${start.getMonth() + 1} إلى ${end.getDate()}/${end.getMonth() + 1}`
+                    });
+                }
+            }
+            weeks.sort((a, b) => new Date(b.end) - new Date(a.end));
+            return weeks;
+        }
+
         function handlePeriodTypeChange() {
             const type = document.getElementById('reportPeriodType').value;
-            const selectEl = document.getElementById('reportPeriodValue');
-            if (!selectEl) return;
-
-            const prevVal = selectEl.value;
-            selectEl.innerHTML = '';
+            const yearWrap = document.getElementById('reportYearSelectWrap');
+            const monthWrap = document.getElementById('reportMonthSelectWrap');
+            const valueWrap = document.getElementById('reportPeriodValueWrap');
             
-            let options = [];
+            const yearSelect = document.getElementById('reportYearSelect');
+            const monthSelect = document.getElementById('reportMonthSelect');
+            const valueSelect = document.getElementById('reportPeriodValue');
+
             if (type === 'weekly') {
+                yearWrap.classList.add('scope-select-hidden');
+                monthWrap.classList.add('scope-select-hidden');
+                valueWrap.classList.remove('scope-select-hidden');
+                
                 const serviceDay = getSelectedServiceDay();
                 const weeks = getWeeksList(serviceDay);
+                valueSelect.innerHTML = '';
                 weeks.forEach(w => {
-                    const val = `week:${w.start}:${w.end}`;
-                    options.push(val);
-                    selectEl.innerHTML += `<option value="${val}">${w.label}</option>`;
+                    valueSelect.innerHTML += `<option value="week:${w.start}:${w.end}">${w.label}</option>`;
                 });
+                generateReport();
             } else if (type === 'monthly') {
+                yearWrap.classList.add('scope-select-hidden');
+                monthWrap.classList.remove('scope-select-hidden');
+                valueWrap.classList.remove('scope-select-hidden');
+                
                 const months = getMonthsList();
+                monthSelect.innerHTML = '';
                 months.forEach(m => {
-                    const val = `month:${m.year}:${m.month}`;
-                    options.push(val);
-                    selectEl.innerHTML += `<option value="${val}">${m.label}</option>`;
+                    monthSelect.innerHTML += `<option value="${m.year}:${m.month}">${m.label}</option>`;
                 });
+                
+                handleReportMonthChange();
             } else if (type === 'yearly') {
+                yearWrap.classList.remove('scope-select-hidden');
+                monthWrap.classList.remove('scope-select-hidden');
+                valueWrap.classList.remove('scope-select-hidden');
+                
                 const years = getYearsList();
+                yearSelect.innerHTML = '';
                 years.forEach(y => {
-                    const val = `year:${y.year}`;
-                    options.push(val);
-                    selectEl.innerHTML += `<option value="${val}">${y.label}</option>`;
+                    yearSelect.innerHTML += `<option value="${y.year}">${y.label}</option>`;
+                });
+                
+                handleReportYearChange();
+            }
+        }
+
+        function handleReportYearChange() {
+            const year = document.getElementById('reportYearSelect').value;
+            const monthSelect = document.getElementById('reportMonthSelect');
+            if (!year) return;
+
+            const arabicMonths = [
+                'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+                'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+            ];
+            
+            monthSelect.innerHTML = '';
+            for (let m = 0; m < 12; m++) {
+                monthSelect.innerHTML += `<option value="${year}:${m + 1}">${arabicMonths[m]} ${year}</option>`;
+            }
+            
+            handleReportMonthChange();
+        }
+
+        function handleReportMonthChange() {
+            const monthVal = document.getElementById('reportMonthSelect').value;
+            const valueSelect = document.getElementById('reportPeriodValue');
+            if (!monthVal) return;
+
+            const [year, month] = monthVal.split(':').map(Number);
+            const serviceDay = getSelectedServiceDay();
+            const weeks = getWeeksForMonth(year, month, serviceDay);
+
+            valueSelect.innerHTML = '';
+            if (weeks.length === 0) {
+                valueSelect.innerHTML = '<option value="">لا توجد أسابيع</option>';
+            } else {
+                weeks.forEach(w => {
+                    valueSelect.innerHTML += `<option value="week:${w.start}:${w.end}">${w.label}</option>`;
                 });
             }
-
-            if (prevVal && options.includes(prevVal)) {
-                selectEl.value = prevVal;
-            }
-            toggleReportSource();
+            generateReport();
         }
 
         function updateDeadlineScopeOptions() {
