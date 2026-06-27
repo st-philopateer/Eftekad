@@ -653,11 +653,16 @@
                 return;
             }
 
-            const me = JSON.parse(localStorage.getItem('currentServant'));
+            const currServant = JSON.parse(localStorage.getItem('currentServant'));
+            if (!currServant) return;
+            const servants = JSON.parse(localStorage.getItem('servants') || '[]');
+            const me = servants.find(s => s.username === currServant.username);
             if (!me) return;
 
             const priestServices = JSON.parse(localStorage.getItem('priestServices') || '[]');
-            const osraObj = priestServices.find(o => o.name === selectedOsra);
+            const myPriestServices = priestServices.find(s => s.priestUser === me.priestUser);
+            const osrasList = myPriestServices ? myPriestServices.osras : [];
+            const osraObj = osrasList.find(o => o.name === selectedOsra);
 
             let myClasses = me.fasl ? me.fasl.split(',').map(f => f.trim()).filter(Boolean) : [];
 
