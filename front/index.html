@@ -412,9 +412,9 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold small">الأسرة <span class="text-danger">*</span></label>
-                            <select id="createServantOsraSelect" class="form-select auth-input py-2">
-                                <option value="">اختر الأسرة</option>
-                            </select>
+                            <div id="createServantOsraCheckboxes" class="row g-2 border p-2 rounded bg-body" style="max-height: 120px; overflow-y: auto;">
+                                <!-- Checkboxes will be populated here -->
+                            </div>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-bold small">واتساب الخادم <span class="text-danger">*</span></label>
@@ -1775,18 +1775,13 @@
             const whatsapp = document.getElementById('createServantWhatsapp').value.trim();
             const msg = document.getElementById('createServantMsg');
 
-            if (!fullName || !su || !sp || !whatsapp) {
-                msg.className = "mt-3 fw-bold text-danger";
-                msg.innerText = "الرجاء إكمال كافة الخانات المطلوبة!";
-                msg.classList.remove('d-none');
-                return;
-            }
+            let checkboxes = document.querySelectorAll('.create-osra-checkbox:checked');
+            let osraList = Array.from(checkboxes).map(cb => cb.value);
+            let osra = osraList.join(', ') || 'عام';
 
-            const osraSelect = document.getElementById('createServantOsraSelect');
-            const osra = osraSelect ? osraSelect.value : '';
-            if (!osra) {
+            if (!fullName || !su || !sp || !whatsapp || osraList.length === 0) {
                 msg.className = "mt-3 fw-bold text-danger";
-                msg.innerText = "الرجاء اختيار الأسرة أولاً!";
+                msg.innerText = "الرجاء إكمال كافة الخانات المطلوبة والأسرة!";
                 msg.classList.remove('d-none');
                 return;
             }
@@ -1811,14 +1806,15 @@
             const fullName = document.getElementById('createServantFullName').value.trim();
             const su = document.getElementById('createServantUser').value.trim();
             const sp = document.getElementById('createServantPass').value;
-            const osraSelect = document.getElementById('createServantOsraSelect');
-            const osra = osraSelect ? osraSelect.value : '';
             const whatsapp = document.getElementById('createServantWhatsapp').value.trim();
             const msg = document.getElementById('createServantMsg');
 
-            if (!fullName || !su || !sp || !osra || !whatsapp) {
+            let checkboxes = document.querySelectorAll('.create-osra-checkbox:checked');
+            let osraList = Array.from(checkboxes).map(cb => cb.value);
+
+            if (!fullName || !su || !sp || !whatsapp || osraList.length === 0) {
                 msg.className = "mt-3 fw-bold text-danger";
-                msg.innerText = "الرجاء إكمال كافة الخانات المطلوبة!";
+                msg.innerText = "الرجاء إكمال كافة الخانات المطلوبة والأسرة!";
                 msg.classList.remove('d-none');
                 setTimeout(() => msg.classList.add('d-none'), 3000);
                 return;
@@ -1831,17 +1827,18 @@
             const fullName = document.getElementById('createServantFullName').value.trim();
             const su = document.getElementById('createServantUser').value.trim();
             const sp = document.getElementById('createServantPass').value;
-            
-            const osraSelect = document.getElementById('createServantOsraSelect');
-            const osra = osraSelect ? osraSelect.value : 'عام';
             const fasl = 'عام';
             const whatsapp = document.getElementById('createServantWhatsapp').value.trim();
             const msg = document.getElementById('createServantMsg');
 
-            if (!fullName || !su || !sp || !osra || !whatsapp) {
+            let checkboxes = document.querySelectorAll('.create-osra-checkbox:checked');
+            let osraList = Array.from(checkboxes).map(cb => cb.value);
+            let osra = osraList.join(', ') || 'عام';
+
+            if (!fullName || !su || !sp || !whatsapp || osraList.length === 0) {
                 if (!silent) {
                     msg.className = "mt-3 fw-bold text-danger";
-                    msg.innerText = "الرجاء إكمال كافة الخانات المطلوبة!";
+                    msg.innerText = "الرجاء إكمال كافة الخانات المطلوبة والأسرة!";
                     msg.classList.remove('d-none');
                 }
                 return Promise.resolve(false);
@@ -1869,7 +1866,10 @@
                 document.getElementById('createServantPass').value = '';
                 document.getElementById('createServantWhatsapp').value = '';
                 
-                if (osraSelect) osraSelect.value = '';
+                // Reset checkboxes
+                document.querySelectorAll('.create-osra-checkbox').forEach(cb => {
+                    cb.checked = (cb.value === 'عام');
+                });
 
                 loadServantsTable();
                 updateDashboardStats();
@@ -2467,11 +2467,12 @@
                 generateReport();
             } else if (type === 'monthly' || type === 'yearly') {
                 yearWrap.classList.remove('scope-select-hidden');
-                monthWrap.classList.remove('scope-select-hidden');
                 
                 if (type === 'monthly') {
+                    monthWrap.classList.remove('scope-select-hidden');
                     valueWrap.classList.remove('scope-select-hidden');
                 } else {
+                    monthWrap.classList.add('scope-select-hidden');
                     valueWrap.classList.add('scope-select-hidden');
                 }
                 
@@ -5565,13 +5566,45 @@ window.onload = function() {
         }
 
         function populateAddServantOsras() {
-            let select = document.getElementById('createServantOsraSelect');
-            if (!select) return;
+            let container = document.getElementById('createServantOsraCheckboxes');
+            if (!container) return;
             let osras = getPriestServices();
-            select.innerHTML = '<option value="">اختر الأسرة</option>';
+            container.innerHTML = '';
+            
+            // Add 'عام' checkbox
+            container.innerHTML += `
+                <div class="col-md-6 bg-light rounded p-1">
+                    <div class="form-check">
+                        <input class="form-check-input create-osra-checkbox" type="checkbox" value="عام" id="create_osra_general" checked>
+                        <label class="form-check-label mx-2 small fw-bold" for="create_osra_general">عام</label>
+                    </div>
+                </div>`;
+
             osras.forEach(o => {
-                select.innerHTML += `<option value="${o.name}">${o.name}</option>`;
+                container.innerHTML += `
+                    <div class="col-md-6 p-1">
+                        <div class="form-check">
+                            <input class="form-check-input create-osra-checkbox" type="checkbox" value="${o.name}" id="create_osra_${o.name}">
+                            <label class="form-check-label mx-2 small fw-bold" for="create_osra_${o.name}">${o.name}</label>
+                        </div>
+                    </div>`;
             });
+            
+            // Uncheck 'عام' if other is checked, and vice versa
+            setTimeout(() => {
+                document.querySelectorAll('.create-osra-checkbox').forEach(cb => {
+                    cb.addEventListener('change', () => {
+                        if (cb.value === 'عام' && cb.checked) {
+                            document.querySelectorAll('.create-osra-checkbox').forEach(oCb => {
+                                if (oCb.value !== 'عام') oCb.checked = false;
+                            });
+                        } else if (cb.value !== 'عام' && cb.checked) {
+                            let gen = document.getElementById('create_osra_general');
+                            if (gen) gen.checked = false;
+                        }
+                    });
+                });
+            }, 100);
         }
 
                 function openEditServantModal(username) {
@@ -5706,9 +5739,7 @@ window.onload = function() {
                 loadServantsTable();
                 closeServantProfileEditor();
 
-                if (isServerMode()) {
-                    pushKeysToServer(['servants']);
-                }
+
             }
         }
 
