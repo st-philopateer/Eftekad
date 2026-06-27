@@ -250,8 +250,14 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-bold">الأسرة <span class="text-danger">*</span></label>
-                            <select id="addWaznaOsra" class="form-select auth-input py-2" onchange="validateServantWaznaForm()">
+                            <select id="addWaznaOsra" class="form-select auth-input py-2" onchange="populateAddWaznaFaslDropdown()">
                                 <option value="">اختر الأسرة</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">الفصل <span class="text-danger">*</span></label>
+                            <select id="addWaznaFasl" class="form-select auth-input py-2" onchange="validateServantWaznaForm()" disabled>
+                                <option value="">اختر الأسرة أولاً</option>
                             </select>
                         </div>
                         <div class="col-md-4">
@@ -623,7 +629,51 @@
             });
             if (osraNames.length === 1) {
                 select.value = osraNames[0];
+                populateAddWaznaFaslDropdown();
+            } else {
+                let faslSelect = document.getElementById('addWaznaFasl');
+                if (faslSelect) {
+                    faslSelect.innerHTML = '<option value="">اختر الأسرة أولاً</option>';
+                    faslSelect.disabled = true;
+                }
             }
+        }
+
+        function populateAddWaznaFaslDropdown() {
+            const osraSelect = document.getElementById('addWaznaOsra');
+            const faslSelect = document.getElementById('addWaznaFasl');
+            if (!osraSelect || !faslSelect) return;
+
+            const selectedOsra = osraSelect.value;
+            faslSelect.innerHTML = '<option value="">اختر الفصل</option>';
+
+            if (!selectedOsra) {
+                faslSelect.disabled = true;
+                validateServantWaznaForm();
+                return;
+            }
+
+            const me = JSON.parse(localStorage.getItem('currentServant'));
+            if (!me) return;
+
+            const priestServices = JSON.parse(localStorage.getItem('priestServices') || '[]');
+            const osraObj = priestServices.find(o => o.name === selectedOsra);
+
+            let myClasses = me.fasl ? me.fasl.split(',').map(f => f.trim()).filter(Boolean) : [];
+
+            if (osraObj && osraObj.fasls) {
+                let osraFasls = osraObj.fasls.filter(f => myClasses.includes(f));
+                osraFasls.forEach(f => {
+                    faslSelect.innerHTML += `<option value="${f}">${f}</option>`;
+                });
+            }
+
+            if (myClasses.includes('عام') || [...faslSelect.options].length === 1) {
+                faslSelect.innerHTML += '<option value="عام">عام</option>';
+            }
+
+            faslSelect.disabled = false;
+            validateServantWaznaForm();
         }
 
         const darkModeBtn = document.getElementById('darkModeBtn');
@@ -877,7 +927,9 @@
             const n = document.getElementById('addWaznaName').value.trim();
             const p = document.getElementById('addWaznaPhone').value.trim();
             const osra = document.getElementById('addWaznaOsra').value;
-            document.getElementById('addWaznaBtn').disabled = !(n && p && osra);
+            const faslSelect = document.getElementById('addWaznaFasl');
+            const fasl = faslSelect ? faslSelect.value : '';
+            document.getElementById('addWaznaBtn').disabled = !(n && p && osra && fasl);
         }
 
         function saveWazna() {
@@ -888,9 +940,11 @@
             const address = document.getElementById('addWaznaAddress').value.trim();
             const notes = document.getElementById('addWaznaNotes').value.trim();
             const osra = document.getElementById('addWaznaOsra').value;
+            const faslSelect = document.getElementById('addWaznaFasl');
+            const fasl = faslSelect ? faslSelect.value : 'عام';
             const msg = document.getElementById('addWaznaMsg');
 
-            if (n && p && osra) {
+            if (n && p && osra && fasl) {
                 let waznat = JSON.parse(localStorage.getItem('waznat') || '[]');
                 let curr = JSON.parse(localStorage.getItem('currentServant'));
                 waznat.push({
@@ -904,7 +958,8 @@
                     notes: notes,
                     lastCallResult: 'لم يتم الاتصال بعد',
                     timestamp: new Date().toISOString(),
-                    osra: osra
+                    osra: osra,
+                    fasl: fasl
                 });
                 localStorage.setItem('waznat', JSON.stringify(waznat));
 
@@ -919,6 +974,10 @@
                 document.getElementById('addWaznaAddress').value = '';
                 document.getElementById('addWaznaNotes').value = '';
                 document.getElementById('addWaznaOsra').value = '';
+                if (faslSelect) {
+                    faslSelect.innerHTML = '<option value="">اختر الأسرة أولاً</option>';
+                    faslSelect.disabled = true;
+                }
                 validateServantWaznaForm();
 
                 loadWaznat();
