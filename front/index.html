@@ -432,11 +432,17 @@
                 <div class="card p-4 fade-in mt-4">
                     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
                         <h5 class="fw-bold mb-0 text-primary">الخدام</h5>
-                        <div class="d-flex align-items-center gap-2" style="min-width: 250px;">
-                            <label class="form-label mb-0 fw-bold small text-nowrap">تصفية حسب الأسرة:</label>
-                            <select id="filterServantsByOsra" class="form-select form-select-sm auth-input py-1" onchange="loadServantsTable()">
-                                <option value="all">الكل (جميع الأسر)</option>
-                            </select>
+                        <div class="d-flex align-items-center gap-3 flex-wrap">
+                            <div class="d-flex align-items-center gap-2">
+                                <label class="form-label mb-0 fw-bold small text-nowrap">بحث:</label>
+                                <input type="text" id="searchServantsInput" class="form-control form-control-sm auth-input py-1" placeholder="بحث بالاسم أو الحساب..." oninput="loadServantsTable()" style="max-width: 180px;">
+                            </div>
+                            <div class="d-flex align-items-center gap-2" style="min-width: 200px;">
+                                <label class="form-label mb-0 fw-bold small text-nowrap">تصفية حسب الأسرة:</label>
+                                <select id="filterServantsByOsra" class="form-select form-select-sm auth-input py-1" onchange="loadServantsTable()">
+                                    <option value="all">الكل (جميع الأسر)</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="table-responsive">
@@ -581,11 +587,8 @@
                                     <!-- Checkboxes will be populated here -->
                                 </div>
                             </div>
-                            <div class="mb-4">
-                                <label class="form-label fw-bold">الفصل</label>
-                                <select id="editServantFasl" class="form-select auth-input py-2">
-                                    <option value="">اختر الفصل</option>
-                                </select>
+                            <div class="mb-4" id="editServantFaslsContainer">
+                                <!-- Dynamic classes selects will be generated here -->
                             </div>
                             <button class="btn btn-primary w-100 py-2 fw-bold" onclick="saveServantEdit()">حفظ
                                 التعديلات</button>
@@ -1976,6 +1979,7 @@
     let myServants = allServants.filter(s => s.priestUser === curr.username);
 
     let filterSelect = document.getElementById('filterServantsByOsra');
+    let searchInput = document.getElementById('searchServantsInput');
     let tbody = document.getElementById('servantsTableBody');
     tbody.innerHTML = '';
 
@@ -1983,12 +1987,21 @@
     if (!filterOsra) {
         filterOsra = 'all';
     }
+    let query = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
     let filteredServants = myServants;
     if (filterOsra !== 'all') {
         filteredServants = myServants.filter(s => {
             if (!s.osra) return false;
             return s.osra.split(',').map(o => o.trim()).includes(filterOsra);
+        });
+    }
+
+    if (query) {
+        filteredServants = filteredServants.filter(s => {
+            let name = (s.fullName || '').toLowerCase();
+            let username = (s.username || '').toLowerCase();
+            return name.includes(query) || username.includes(query);
         });
     }
 
@@ -2086,7 +2099,7 @@
                     if (filterValue) {
                         filteredWaznat = filteredWaznat.filter(w => {
                             let srv = myServants.find(s => s.username === w.servantUser);
-                            return srv && srv.fasl === filterValue;
+                            return srv && srv.fasl && srv.fasl.split(',').map(f => f.trim()).includes(filterValue);
                         });
                     }
                 } else if (filterType === 'servant') {
@@ -2495,6 +2508,7 @@
             } else if (scope === 'fasl' || scope === 'servant') {
                 osraWrap.classList.remove('scope-select-hidden');
                 valueWrap.classList.remove('scope-select-hidden');
+                selectEl.classList.remove('scope-select-hidden');
                 
                 const osraSelect = document.getElementById('deadlineScopeOsra');
                 const osras = getPriestServices();
@@ -2822,7 +2836,7 @@
                         let servantOsrasList = servant.osra ? servant.osra.split(',').map(o => o.trim()) : [];
                         if (!servantOsrasList.includes(scopeVal)) return false;
                     }
-                    if (scope === 'fasl' && scopeVal && servant.fasl !== scopeVal) return false;
+                    if (scope === 'fasl' && scopeVal && (!servant.fasl || !servant.fasl.split(',').map(f => f.trim()).includes(scopeVal))) return false;
                     if (scope === 'servant' && scopeVal && servant.username !== scopeVal) return false;
 
                     let servantWaznat = allWaznat.filter(w => w.servantUser === servant.username);
@@ -2867,7 +2881,7 @@
                         let servantOsrasList = servant.osra ? servant.osra.split(',').map(o => o.trim()) : [];
                         if (!servantOsrasList.includes(scopeVal)) return;
                     }
-                    if (scope === 'fasl' && scopeVal && servant.fasl !== scopeVal) return;
+                    if (scope === 'fasl' && scopeVal && (!servant.fasl || !servant.fasl.split(',').map(f => f.trim()).includes(scopeVal))) return;
                     if (scope === 'servant' && scopeVal && servant.username !== scopeVal) return;
 
                     let statusToUse = w.lastCallResult;
@@ -4392,7 +4406,7 @@ window.onload = function() {
                 let matches = false;
                 if (dl.scope === 'all') matches = true;
                 else if (dl.scope === 'osra' && servant.osra && servant.osra.split(',').map(o => o.trim()).includes(dl.scopeValue)) matches = true;
-                else if (dl.scope === 'fasl' && servant.fasl === dl.scopeValue) matches = true;
+                else if (dl.scope === 'fasl' && servant.fasl && servant.fasl.split(',').map(f => f.trim()).includes(dl.scopeValue)) matches = true;
                 else if (dl.scope === 'servant' && servant.username === dl.scopeValue) matches = true;
                 if (matches && priorities[dl.scope] > bestPriority) {
                     best = dl;
@@ -4421,7 +4435,7 @@ window.onload = function() {
             } else if (scope === 'osra') {
                 targetServants = myServants.filter(s => s.osra && s.osra.split(',').map(o => o.trim()).includes(scopeValue)).map(s => s.username);
             } else if (scope === 'fasl') {
-                targetServants = myServants.filter(s => s.fasl === scopeValue).map(s => s.username);
+                targetServants = myServants.filter(s => s.fasl && s.fasl.split(',').map(f => f.trim()).includes(scopeValue)).map(s => s.username);
             } else if (scope === 'servant') {
                 targetServants = myServants.filter(s => s.username === scopeValue).map(s => s.username);
             }
@@ -4997,8 +5011,9 @@ window.onload = function() {
                     let servants = JSON.parse(localStorage.getItem('servants') || '[]');
                     let updated = false;
                     servants.forEach(s => {
-                        if (s.osra && s.osra.split(',').map(o => o.trim()).includes(osraName) && s.fasl === faslName) {
-                            s.fasl = 'عام';
+                        if (s.osra && s.osra.split(',').map(o => o.trim()).includes(osraName) && s.fasl && s.fasl.split(',').map(f => f.trim()).includes(faslName)) {
+                            let classes = s.fasl.split(',').map(f => f.trim()).filter(f => f !== faslName);
+                            s.fasl = classes.join(', ') || 'عام';
                             updated = true;
                         }
                     });
@@ -5073,7 +5088,7 @@ window.onload = function() {
 
             let html = '<ul class="list-group">';
             osra.fasls.forEach(fasl => {
-                let assignedServants = myServants.filter(s => s.osra && s.osra.split(',').map(o => o.trim()).includes(osraName) && s.fasl === fasl);
+                let assignedServants = myServants.filter(s => s.osra && s.osra.split(',').map(o => o.trim()).includes(osraName) && s.fasl && s.fasl.split(',').map(f => f.trim()).includes(fasl));
                 let servantsHTML = '';
                 if (assignedServants.length > 0) {
                     servantsHTML = `<div class="small text-success mt-1 fw-bold"><i class="fas fa-user-tie me-1"></i> الخدام: ${assignedServants.map(s => `<span class="badge bg-primary text-white mx-1">${s.fullName || s.username}</span>`).join('')}</div>`;
@@ -5137,13 +5152,18 @@ window.onload = function() {
                 listContainer.innerHTML = '<div class="col-12 text-muted">لا يوجد خدام مسجلين في هذه الأسرة بعد. أضفهم من تبويب الخدام.</div>';
             } else {
                 eligibleServants.forEach(s => {
-                    let isChecked = (s.fasl === faslName) ? 'checked' : '';
+                    let isChecked = (s.fasl && s.fasl.split(',').map(f => f.trim()).includes(faslName)) ? 'checked' : '';
+                    let otherClasses = s.fasl ? s.fasl.split(',').map(f => f.trim()).filter(f => f !== faslName && f !== 'عام' && f !== '') : [];
+                    let extraText = otherClasses.length > 0 ? 'موزع أيضاً في: ' + otherClasses.join(', ') : 'غير موزع';
+                    if (s.fasl && s.fasl.split(',').map(f => f.trim()).includes(faslName)) {
+                        extraText = 'موزع في هذا الفصل' + (otherClasses.length > 0 ? ' (و أيضاً في: ' + otherClasses.join(', ') + ')' : '');
+                    }
                     listContainer.innerHTML += `
                         <div class="col-md-6">
                             <div class="form-check border p-2 rounded">
                                 <input class="form-check-input servant-assign-cb" type="checkbox" value="${s.username}" id="chk_${s.username}" ${isChecked}>
                                 <label class="form-check-label fw-bold mx-2" for="chk_${s.username}">
-                                    ${s.username} <small class="text-muted">(${s.fasl && s.fasl !== 'عام' && s.fasl !== faslName ? 'موزع في: ' + s.fasl : 'غير موزع'})</small>
+                                    ${s.fullName || s.username} <small class="text-muted">(${extraText})</small>
                                 </label>
                             </div>
                         </div>`;
@@ -5170,12 +5190,19 @@ window.onload = function() {
                 let servantOsras = s.osra ? s.osra.split(',').map(o => o.trim()) : [];
                 if (s.priestUser === curr.username && servantOsras.includes(osraName)) {
                     if (selectedUsernames.includes(s.username)) {
-                        s.fasl = faslName;
-                        changed = true;
-                    } else if (unselectedUsernames.includes(s.username) && s.fasl === faslName) {
-                        // If they were unchecked but previously in this fasl, remove them from fasl
-                        s.fasl = 'عام';
-                        changed = true;
+                        let classes = s.fasl && s.fasl !== 'عام' ? s.fasl.split(',').map(f => f.trim()) : [];
+                        if (!classes.includes(faslName)) {
+                            classes.push(faslName);
+                            s.fasl = classes.join(', ');
+                            changed = true;
+                        }
+                    } else if (unselectedUsernames.includes(s.username)) {
+                        let classes = s.fasl && s.fasl !== 'عام' ? s.fasl.split(',').map(f => f.trim()) : [];
+                        if (classes.includes(faslName)) {
+                            classes = classes.filter(f => f !== faslName);
+                            s.fasl = classes.join(', ') || 'عام';
+                            changed = true;
+                        }
                     }
                 }
             });
@@ -5282,64 +5309,106 @@ window.onload = function() {
         }
 
         function populateEditServantFasls(currentFasl = null) {
-            let faslSelect = document.getElementById('editServantFasl');
-            if (!faslSelect) return;
+            let container = document.getElementById('editServantFaslsContainer');
+            if (!container) return;
             
-            // If currentFasl is an event object, override to null
             if (currentFasl && currentFasl.target) currentFasl = null;
 
-            // Preserve current selection if no explicit currentFasl is provided
-            if (!currentFasl) {
-                currentFasl = faslSelect.value;
-            }
-
-            let osras = getPriestServices();
-            faslSelect.innerHTML = '<option value="">اختر الفصل</option>';
-
-            // Collect all selected osras from the checkboxes
             let checkboxes = document.querySelectorAll('.edit-osra-checkbox:checked');
             let selectedOsras = Array.from(checkboxes).map(cb => cb.value);
 
-            if (selectedOsras.length > 0) {
-                // If "عام" is selected, add "عام" option
-                if (selectedOsras.includes('عام')) {
+            let preservedSelections = {};
+            container.querySelectorAll('select.edit-servant-fasl-select').forEach(sel => {
+                let osraKey = sel.getAttribute('data-osra');
+                if (osraKey) {
+                    preservedSelections[osraKey] = sel.value;
+                }
+            });
+
+            let initialFaslList = [];
+            if (currentFasl && typeof currentFasl === 'string') {
+                initialFaslList = currentFasl.split(',').map(f => f.trim()).filter(Boolean);
+            }
+
+            container.innerHTML = '';
+            let osras = getPriestServices();
+
+            if (selectedOsras.length === 0) {
+                container.innerHTML = `
+                    <label class="form-label fw-bold">الفصل</label>
+                    <select class="form-select auth-input py-2 edit-servant-fasl-select" data-osra="all" disabled>
+                        <option value="">اختر الأسرة أولاً</option>
+                    </select>
+                `;
+                return;
+            }
+
+            selectedOsras.forEach((selectedOsra, index) => {
+                let div = document.createElement('div');
+                div.className = 'mb-3';
+                
+                let label = document.createElement('label');
+                label.className = 'form-label fw-bold small text-muted';
+                label.innerText = selectedOsra === 'عام' ? 'الفصل (عام)' : `الفصل في أسرة "${selectedOsra}"`;
+                
+                let select = document.createElement('select');
+                select.className = 'form-select auth-input py-2 edit-servant-fasl-select';
+                select.setAttribute('data-osra', selectedOsra);
+                
+                select.innerHTML = '<option value="">عام / لا يوجد</option>';
+                
+                if (selectedOsra === 'عام') {
                     let opt = document.createElement('option');
                     opt.value = 'عام';
                     opt.innerText = 'عام';
-                    if (currentFasl === 'عام') opt.selected = true;
-                    faslSelect.appendChild(opt);
+                    select.appendChild(opt);
+                } else {
+                    let osraObj = osras.find(o => o.name === selectedOsra);
+                    if (osraObj && osraObj.fasls) {
+                        osraObj.fasls.forEach(f => {
+                            let opt = document.createElement('option');
+                            opt.value = f;
+                            opt.innerText = f;
+                            select.appendChild(opt);
+                        });
+                    }
                 }
 
-                // Collect all classes for selected osras
-                selectedOsras.forEach(selectedOsra => {
-                    if (selectedOsra !== 'عام') {
-                        let osra = osras.find(o => o.name === selectedOsra);
-                        if (osra && osra.fasls) {
-                            osra.fasls.forEach(f => {
-                                // Prevent adding duplicate class names
-                                if (!Array.from(faslSelect.options).some(opt => opt.value === f)) {
-                                    let opt = document.createElement('option');
-                                    opt.value = f;
-                                    opt.innerText = f;
-                                    if (f === currentFasl) opt.selected = true;
-                                    faslSelect.appendChild(opt);
-                                }
-                            });
+                let valToSet = preservedSelections[selectedOsra] || '';
+                if (!valToSet && initialFaslList.length > 0) {
+                    if (selectedOsra === 'عام') {
+                        valToSet = initialFaslList.includes('عام') ? 'عام' : '';
+                    } else {
+                        let osraObj = osras.find(o => o.name === selectedOsra);
+                        if (osraObj && osraObj.fasls) {
+                            valToSet = initialFaslList.find(f => osraObj.fasls.includes(f)) || '';
                         }
                     }
-                });
-            }
+                }
+
+                if (valToSet) {
+                    select.value = valToSet;
+                }
+
+                div.appendChild(label);
+                div.appendChild(select);
+                container.appendChild(div);
+            });
         }
 
         function saveServantEdit() {
             let username = document.getElementById('editServantUsername').value;
             
-            // Collect all selected osras from checkboxes
             let checkboxes = document.querySelectorAll('.edit-osra-checkbox:checked');
             let osraList = Array.from(checkboxes).map(cb => cb.value);
             let osra = osraList.join(', ') || 'عام';
             
-            let fasl = document.getElementById('editServantFasl').value || 'عام';
+            let faslSelects = document.querySelectorAll('select.edit-servant-fasl-select');
+            let faslList = Array.from(faslSelects)
+                .map(sel => sel.value)
+                .filter(val => val && val !== '');
+            
+            let fasl = faslList.join(', ') || 'عام';
 
             let servants = JSON.parse(localStorage.getItem('servants') || '[]');
             let index = servants.findIndex(s => s.username === username);

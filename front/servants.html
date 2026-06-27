@@ -1201,8 +1201,8 @@
             let bestPriority = -1;
             deadlineList.forEach(dl => {
                 let matches = dl.scope === 'all' ||
-                    (dl.scope === 'osra' && me.osra === dl.scopeValue) ||
-                    (dl.scope === 'fasl' && me.fasl === dl.scopeValue) ||
+                    (dl.scope === 'osra' && me.osra && me.osra.split(',').map(o => o.trim()).includes(dl.scopeValue)) ||
+                    (dl.scope === 'fasl' && me.fasl && me.fasl.split(',').map(f => f.trim()).includes(dl.scopeValue)) ||
                     (dl.scope === 'servant' && me.username === dl.scopeValue);
                 if (matches && priorities[dl.scope] > bestPriority) {
                     applicable = dl;
@@ -1309,7 +1309,7 @@
             deadlineList.forEach(dl => {
                 let matches = dl.scope === 'all' ||
                     (dl.scope === 'osra' && myOsraList.includes(dl.scopeValue)) ||
-                    (dl.scope === 'fasl' && me.fasl === dl.scopeValue) ||
+                    (dl.scope === 'fasl' && me.fasl && me.fasl.split(',').map(f => f.trim()).includes(dl.scopeValue)) ||
                     (dl.scope === 'servant' && me.username === dl.scopeValue);
                 if (matches && priorities[dl.scope] > bestPriority) {
                     applicable = dl;
