@@ -587,9 +587,7 @@
                                      <!-- Checkboxes will be populated here -->
                                  </div>
                              </div>
-                             <div class="mb-4" id="editServantFaslsContainer">
-                                 <!-- Dynamic classes selects will be generated here -->
-                             </div>
+                             
                             <button class="btn btn-primary w-100 py-2 fw-bold" onclick="saveServantEdit()">حفظ
                                 التعديلات</button>
                         </div>
@@ -5517,7 +5515,7 @@ window.onload = function() {
                 container.innerHTML += `
                     <div class="col-md-6">
                         <div class="form-check">
-                            <input class="form-check-input edit-osra-checkbox" type="checkbox" value="عام" id="edit_osra_general" \${isChecked} onchange="populateEditServantFasls()">
+                            <input class="form-check-input edit-osra-checkbox" type="checkbox" value="عام" id="edit_osra_general" \${isChecked}>
                             <label class="form-check-label mx-2" for="edit_osra_general">عام</label>
                         </div>
                     </div>`;
@@ -5528,104 +5526,18 @@ window.onload = function() {
                 container.innerHTML += `
                     <div class="col-md-6">
                         <div class="form-check">
-                            <input class="form-check-input edit-osra-checkbox" type="checkbox" value="${o.name}" id="edit_osra_${o.name}" \${isChecked} onchange="populateEditServantFasls()">
+                            <input class="form-check-input edit-osra-checkbox" type="checkbox" value="${o.name}" id="edit_osra_${o.name}" \${isChecked}>
                             <label class="form-check-label mx-2" for="edit_osra_${o.name}">${o.name}</label>
                         </div>
                     </div>`;
             });
-
-            populateEditServantFasls(currentFasl);
 
             var myModal = new bootstrap.Modal(document.getElementById('editServantModal'));
             myModal.show();
         }
 
         function populateEditServantFasls(currentFasl = null) {
-            let container = document.getElementById('editServantFaslsContainer');
-            if (!container) return;
-            
-            if (currentFasl && currentFasl.target) currentFasl = null;
-
-            let checkboxes = document.querySelectorAll('.edit-osra-checkbox:checked');
-            let selectedOsras = Array.from(checkboxes).map(cb => cb.value);
-
-            let preservedSelections = {};
-            container.querySelectorAll('select.edit-servant-fasl-select').forEach(sel => {
-                let osraKey = sel.getAttribute('data-osra');
-                if (osraKey) {
-                    preservedSelections[osraKey] = sel.value;
-                }
-            });
-
-            let initialFaslList = [];
-            if (currentFasl && typeof currentFasl === 'string') {
-                initialFaslList = currentFasl.split(',').map(f => f.trim()).filter(Boolean);
-            }
-
-            container.innerHTML = '';
-            let osras = getPriestServices();
-
-            if (selectedOsras.length === 0) {
-                container.innerHTML = `
-                    <label class="form-label fw-bold">الفصل</label>
-                    <select class="form-select auth-input py-2 edit-servant-fasl-select" data-osra="all" disabled>
-                        <option value="">اختر الأسرة أولاً</option>
-                    </select>
-                `;
-                return;
-            }
-
-            selectedOsras.forEach((selectedOsra, index) => {
-                let div = document.createElement('div');
-                div.className = 'mb-3';
-                
-                let label = document.createElement('label');
-                label.className = 'form-label fw-bold small text-muted';
-                label.innerText = selectedOsra === 'عام' ? 'الفصل (عام)' : `الفصل في أسرة "\${selectedOsra}"`;
-                
-                let select = document.createElement('select');
-                select.className = 'form-select auth-input py-2 edit-servant-fasl-select';
-                select.setAttribute('data-osra', selectedOsra);
-                
-                select.innerHTML = '<option value="">عام / لا يوجد</option>';
-                
-                if (selectedOsra === 'عام') {
-                    let opt = document.createElement('option');
-                    opt.value = 'عام';
-                    opt.innerText = 'عام';
-                    select.appendChild(opt);
-                } else {
-                    let osraObj = osras.find(o => o.name === selectedOsra);
-                    if (osraObj && osraObj.fasls) {
-                        osraObj.fasls.forEach(f => {
-                            let opt = document.createElement('option');
-                            opt.value = f;
-                            opt.innerText = f;
-                            select.appendChild(opt);
-                        });
-                    }
-                }
-
-                let valToSet = preservedSelections[selectedOsra] || '';
-                if (!valToSet && initialFaslList.length > 0) {
-                    if (selectedOsra === 'عام') {
-                        valToSet = initialFaslList.includes('عام') ? 'عام' : '';
-                    } else {
-                        let osraObj = osras.find(o => o.name === selectedOsra);
-                        if (osraObj && osraObj.fasls) {
-                            valToSet = initialFaslList.find(f => osraObj.fasls.includes(f)) || '';
-                        }
-                    }
-                }
-
-                if (valToSet) {
-                    select.value = valToSet;
-                }
-
-                div.appendChild(label);
-                div.appendChild(select);
-                container.appendChild(div);
-            });
+            // Deprecated: class assignment is now done in the classes tab
         }
 
         function saveServantEdit() {
@@ -5634,19 +5546,31 @@ window.onload = function() {
             let checkboxes = document.querySelectorAll('.edit-osra-checkbox:checked');
             let osraList = Array.from(checkboxes).map(cb => cb.value);
             let osra = osraList.join(', ') || 'عام';
-            
-            let faslSelects = document.querySelectorAll('select.edit-servant-fasl-select');
-            let faslList = Array.from(faslSelects)
-                .map(sel => sel.value)
-                .filter(val => val && val !== '');
-            
-            let fasl = faslList.join(', ') || 'عام';
 
             let servants = JSON.parse(localStorage.getItem('servants') || '[]');
             let index = servants.findIndex(s => s.username === username);
             if (index > -1) {
-                servants[index].osra = osra;
-                servants[index].fasl = fasl;
+                let s = servants[index];
+                s.osra = osra;
+                
+                // Clean up classes that belong to families the servant is no longer in
+                let osras = getPriestServices();
+                let currentClasses = s.fasl && s.fasl !== 'عام' ? s.fasl.split(',').map(f => f.trim()) : [];
+                let newClasses = [];
+                
+                currentClasses.forEach(f => {
+                    let parentOsra = osras.find(o => o.fasls && o.fasls.includes(f));
+                    if (parentOsra) {
+                        if (osraList.includes(parentOsra.name)) {
+                            newClasses.push(f);
+                        }
+                    } else {
+                        newClasses.push(f);
+                    }
+                });
+                
+                s.fasl = newClasses.join(', ') || 'عام';
+
                 localStorage.setItem('servants', JSON.stringify(servants));
                 loadServantsTable();
 
