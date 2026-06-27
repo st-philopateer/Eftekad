@@ -2092,7 +2092,7 @@
                         <td class="small">${waznaFaslText}</td>
                         <td>
 <span class="badge ${w.lastCallResult === 'رد' ? 'bg-success' : w.lastCallResult === 'لم يرد' ? 'bg-warning text-dark' : (w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'الخادم لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد') ? 'bg-danger' : 'bg-secondary'}">
-    ${w.lastCallResult}
+    ${(w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'الخادم لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد') ? 'الخادم لم يفتقد' : w.lastCallResult}
 </span>
 
 

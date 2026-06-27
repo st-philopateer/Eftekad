@@ -1046,7 +1046,7 @@
                                         let btnDisabled = isDlPassed ? 'disabled title="متأخر عن الديدلاين - لا يمكنك تسجيل الافتقاد"' : '';
                     let visitationDateText = (w.lastCallResult === 'رد' || w.lastCallResult === 'لم يرد') && w.timestamp 
                         ? formatArabicDateTime(w.timestamp) 
-                        : w.lastCallResult;
+                        : ((w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'الخادم لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد') ? 'لم يفتقد بعد' : w.lastCallResult);
                     
                     tbody.innerHTML += `<tr>
                         <td>${index + 1}</td>
@@ -1056,7 +1056,7 @@
                         <td>${fasl}</td>
                         <td>${w.age || '-'}</td>
                         <td>${w.birthDate || '-'}</td>
-                        <td><span class="badge ${badgeClass}">${w.lastCallResult}</span></td>
+                        <td><span class="badge ${badgeClass}">${(w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'الخادم لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد') ? 'لم يفتقد' : w.lastCallResult}</span></td>
                         <td class="small">${visitationDateText}</td>
                         <td>
                             <div class="d-flex justify-content-center gap-1">
