@@ -3121,6 +3121,8 @@
         localStorage.setItem = customSetItem;
 
         document.addEventListener("DOMContentLoaded", async () => {
+            // محاولة رفع أي بيانات معلقة أوفلاين تم حفظها سابقاً بمجرد تحميل الصفحة
+            processPendingDeltas();
             if ('serviceWorker' in navigator && isServerMode()) {
                 let refreshing = false;
                 navigator.serviceWorker.addEventListener('controllerchange', () => {
