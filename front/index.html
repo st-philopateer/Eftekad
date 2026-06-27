@@ -831,7 +831,7 @@
                             <label class="form-label fw-bold">تحديد النطاق</label>
                             <select id="reportScopeValue" class="form-select auth-input scope-select-hidden" onchange="handlePeriodTypeChange()"></select>
                         </div>
-                        <div class="col-md-3" id="reportPeriodTypeWrap">
+                        <div class="col-md-3" id="reportPeriodTypeWrap" style="display: none;">
                             <label class="form-label fw-bold">نوع الفترة</label>
                             <select id="reportPeriodType" class="form-select auth-input" onchange="handlePeriodTypeChange()">
                                 <option value="weekly">أسبوعي</option>
@@ -849,7 +849,7 @@
                             <label class="form-label fw-bold">اختر الشهر</label>
                             <select id="reportMonthSelect" class="form-select auth-input" onchange="handleReportMonthChange()"></select>
                         </div>
-                        <div class="col-md-3" id="reportPeriodValueWrap">
+                        <div class="col-md-3" id="reportPeriodValueWrap" style="display: none;">
                             <label class="form-label fw-bold">اختر الأسبوع</label>
                             <select id="reportPeriodValue" class="form-select auth-input" onchange="generateReport()"></select>
                         </div>
@@ -4929,6 +4929,7 @@ window.onload = function() {
                 validateWaznaForm();
             } else if (tabId === 'reportsTab') {
                 updateReportScopeOptions();
+                toggleReportSource();
             } else if (tabId === 'deadlineTab') {
                 updateDeadlineScopeOptions();
                 renderSavedDeadlines();
