@@ -29,21 +29,11 @@
         .msg-hover-container:hover .msg-actions-hover {
             opacity: 1;
         }
-        [data-bs-theme="dark"] .bg-white.text-dark {
-            background-color: var(--bs-body-bg) !important;
-            color: var(--bs-body-color) !important;
-            border-color: var(--bs-border-color) !important;
-        }
-        [data-bs-theme="dark"] .bg-white.text-dark .text-muted {
-            color: rgba(255, 255, 255, 0.6) !important;
-        }
     </style>
 
     <script>
     window.originalSetItem = localStorage.setItem;
     (function() {
-        sanitizeWaznatFamilies();
-        sanitizeServantsFamilies();
         const savedTheme = localStorage.getItem('servantDashboardTheme');
         if (savedTheme === 'dark') {
             document.documentElement.setAttribute('data-bs-theme', 'dark');
@@ -304,7 +294,7 @@
                         </div>
                         <div class="modal-body text-center p-4">
                             <div class="mb-4">
-                                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 btn-circle-80">
+                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3 btn-circle-80">
                                     <i class="fas fa-phone-volume fa-2x"></i>
                                 </div>
                                 <h4 class="fw-bold text-primary">تسجيل نتيجة الاتصال</h4>
@@ -394,7 +384,7 @@
                         <div class="modal-body p-4 text-center">
                             <p class="text-muted small mb-3">قم بسحب الصورة وتكبيرها لتحديد الجزء المطلوب</p>
                             <div class="position-relative mx-auto mb-3 crop-preview-box">
-                                <canvas id="cropCanvas" width="360" height="360" class="crop-canvas-box"></canvas>
+                                <canvas id="cropCanvas" width="280" height="280" class="crop-canvas-box"></canvas>
                             </div>
                             <div class="mb-3 px-3">
                                 <label class="form-label small fw-bold text-muted d-block text-start">التكبير والتصغير</label>
@@ -663,16 +653,11 @@
                 return;
             }
 
-            const currServant = JSON.parse(localStorage.getItem('currentServant'));
-            if (!currServant) return;
-            const servants = JSON.parse(localStorage.getItem('servants') || '[]');
-            const me = servants.find(s => s.username === currServant.username);
+            const me = JSON.parse(localStorage.getItem('currentServant'));
             if (!me) return;
 
             const priestServices = JSON.parse(localStorage.getItem('priestServices') || '[]');
-            const myPriestServices = priestServices.find(s => s.priestUser === me.priestUser);
-            const osrasList = myPriestServices ? myPriestServices.osras : [];
-            const osraObj = osrasList.find(o => o.name === selectedOsra);
+            const osraObj = priestServices.find(o => o.name === selectedOsra);
 
             let myClasses = me.fasl ? me.fasl.split(',').map(f => f.trim()).filter(Boolean) : [];
 
@@ -804,7 +789,7 @@
             cropCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
             cropCtx.beginPath();
             cropCtx.rect(0, 0, cropCanvas.width, cropCanvas.height);
-            let radius = 165;
+            let radius = 110;
             let cx = cropCanvas.width / 2;
             let cy = cropCanvas.height / 2;
             cropCtx.arc(cx, cy, radius, 0, Math.PI * 2, true);
@@ -815,104 +800,6 @@
             cropCtx.beginPath();
             cropCtx.arc(cx, cy, radius, 0, Math.PI * 2);
             cropCtx.stroke();
-        }
-
-        function sanitizeWaznatFamilies() {
-            try {
-                let waznat = JSON.parse(localStorage.getItem('waznat') || '[]');
-                let priestServices = JSON.parse(localStorage.getItem('priestServices') || '[]');
-                
-                let validOsras = ['عام'];
-                priestServices.forEach(ps => {
-                    if (ps.osras) {
-                        ps.osras.forEach(o => {
-                            if (o.name && !validOsras.includes(o.name)) {
-                                validOsras.push(o.name);
-                            }
-                        });
-                    }
-                });
-
-                let changed = false;
-                waznat.forEach(w => {
-                    if (w.osra && !validOsras.includes(w.osra)) {
-                        w.osra = 'عام';
-                        w.fasl = 'عام';
-                        changed = true;
-                    }
-                });
-
-                if (changed) {
-                    localStorage.setItem('waznat', JSON.stringify(waznat));
-                }
-            } catch (e) {
-                console.error("Error in sanitizeWaznatFamilies:", e);
-            }
-        }
-
-        function sanitizeServantsFamilies() {
-            try {
-                let servants = JSON.parse(localStorage.getItem('servants') || '[]');
-                let priestServices = JSON.parse(localStorage.getItem('priestServices') || '[]');
-                
-                let validOsras = ['عام'];
-                priestServices.forEach(ps => {
-                    if (ps.osras) {
-                        ps.osras.forEach(o => {
-                            if (o.name && !validOsras.includes(o.name)) {
-                                validOsras.push(o.name);
-                            }
-                        });
-                    }
-                });
-
-                let validFasls = ['عام'];
-                priestServices.forEach(ps => {
-                    if (ps.osras) {
-                        ps.osras.forEach(o => {
-                            if (o.fasls) {
-                                o.fasls.forEach(f => {
-                                    if (!validFasls.includes(f)) {
-                                        validFasls.push(f);
-                                    }
-                                });
-                            }
-                        });
-                    }
-                });
-
-                let changed = false;
-                servants.forEach(s => {
-                    if (s.osra) {
-                        let osraList = s.osra.split(',').map(o => o.trim()).filter(Boolean);
-                        let cleanedOsraList = osraList.filter(o => validOsras.includes(o));
-                        let newOsra = cleanedOsraList.join(', ') || 'عام';
-                        if (newOsra !== s.osra) {
-                            s.osra = newOsra;
-                            changed = true;
-                        }
-                    }
-                    if (s.fasl) {
-                        let faslList = s.fasl.split(',').map(f => f.trim()).filter(Boolean);
-                        let cleanedFaslList = faslList.filter(f => validFasls.includes(f));
-                        let newFasl = cleanedFaslList.join(', ') || 'عام';
-                        if (newFasl !== s.fasl) {
-                            s.fasl = newFasl;
-                            changed = true;
-                        }
-                    }
-                    if (s.osra === 'عام' && s.fasl !== 'عام') {
-                        s.fasl = 'عام';
-                        changed = true;
-                    }
-                });
-
-                if (changed) {
-                    localStorage.setItem('servants', JSON.stringify(servants));
-                }
-            } catch (e) {
-                console.error("Error in sanitizeServantsFamilies:", e);
-            }
         }
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -976,7 +863,7 @@
             outCanvas.height = 150;
             const outCtx = outCanvas.getContext('2d');
             
-            let radius = 165;
+            let radius = 110;
             let cx = cropCanvas.width / 2;
             let cy = cropCanvas.height / 2;
             let sx = cx - radius;
@@ -1159,7 +1046,7 @@
                                         let btnDisabled = isDlPassed ? 'disabled title="متأخر عن الديدلاين - لا يمكنك تسجيل الافتقاد"' : '';
                     let visitationDateText = (w.lastCallResult === 'رد' || w.lastCallResult === 'لم يرد') && w.timestamp 
                         ? formatArabicDateTime(w.timestamp) 
-                        : ((w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'الخادم لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد') ? 'الخادم لم يفتقد' : w.lastCallResult);
+                        : ((w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'الخادم لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد') ? 'لم يفتقد بعد' : w.lastCallResult);
                     
                     tbody.innerHTML += `<tr>
                         <td>${index + 1}</td>
@@ -1169,7 +1056,7 @@
                         <td>${fasl}</td>
                         <td>${w.age || '-'}</td>
                         <td>${w.birthDate || '-'}</td>
-                        <td><span class="badge ${badgeClass}">${(w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'الخادم لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد') ? 'الخادم لم يفتقد' : w.lastCallResult}</span></td>
+                        <td><span class="badge ${badgeClass}">${(w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'الخادم لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد') ? 'لم يفتقد' : w.lastCallResult}</span></td>
                         <td class="small">${visitationDateText}</td>
                         <td>
                             <div class="d-flex justify-content-center gap-1">
@@ -1348,30 +1235,6 @@
             return dl;
         }
 
-        function getWaznaApplicableDeadline(deadlineList, w, servant) {
-            const priorities = { servant: 3, fasl: 2, osra: 1, all: 0 };
-            let best = null;
-            let bestPriority = -1;
-            deadlineList.forEach(dl => {
-                let matches = false;
-                if (dl.scope === 'all') {
-                    matches = true;
-                } else if (dl.scope === 'osra' && w.osra === dl.scopeValue) {
-                    matches = true;
-                } else if (dl.scope === 'fasl' && w.fasl === dl.scopeValue) {
-                    matches = true;
-                } else if (dl.scope === 'servant' && w.servantUser === dl.scopeValue) {
-                    matches = true;
-                }
-                
-                if (matches && priorities[dl.scope] > bestPriority) {
-                    best = dl;
-                    bestPriority = priorities[dl.scope];
-                }
-            });
-            return best;
-        }
-
         function checkDeadlines() {
             let currServant = JSON.parse(localStorage.getItem('currentServant'));
             if (!currServant) return;
@@ -1386,41 +1249,50 @@
 
             let deadlineList = Array.isArray(data)
                 ? data.map(normalizeServantDeadline)
-                : (data.timestamp ? [{ id: 'legacy', scope: 'all', scopeValue: '', datetime: data.timestamp }] : []);
+                : (data.timestamp ? [{ scope: 'all', scopeValue: '', datetime: data.timestamp, id: 'legacy' }] : []);
 
             let deadlineListChanged = false;
 
             if (deadlineList.length === 0) return;
 
+            const priorities = { servant: 3, fasl: 2, osra: 1, all: 0 };
+            let applicable = null;
+            let bestPriority = -1;
+            deadlineList.forEach(dl => {
+                let matches = dl.scope === 'all' ||
+                    (dl.scope === 'osra' && me.osra && me.osra.split(',').map(o => o.trim()).includes(dl.scopeValue)) ||
+                    (dl.scope === 'fasl' && me.fasl && me.fasl.split(',').map(f => f.trim()).includes(dl.scopeValue)) ||
+                    (dl.scope === 'servant' && me.username === dl.scopeValue);
+                if (matches && priorities[dl.scope] > bestPriority) {
+                    applicable = dl;
+                    bestPriority = priorities[dl.scope];
+                }
+            });
+            if (!applicable || !applicable.datetime) return;
+
+            const passed = new Date() >= new Date(applicable.datetime);
+            if (!passed) return;
+            let dbDl = deadlineList.find(d => d.id === applicable.id);
+            if (dbDl && !dbDl.applied) {
+                dbDl.applied = true;
+                deadlineListChanged = true;
+            }
+
             let waznat = JSON.parse(localStorage.getItem('waznat') || '[]');
             let changed = false;
-
+            let deadlineTime = new Date(applicable.datetime);
             waznat.forEach(w => {
                 if (w.servantUser === currServant.username) {
-                    let applicable = getWaznaApplicableDeadline(deadlineList, w, me);
-                    if (!applicable || !applicable.datetime) return;
-
-                    let deadlineTime = new Date(applicable.datetime);
-                    const passed = new Date() >= deadlineTime;
-                    if (passed) {
-                        let dbDl = deadlineList.find(d => d.id === applicable.id);
-                        if (dbDl && !dbDl.applied) {
-                            dbDl.applied = true;
-                            deadlineListChanged = true;
-                        }
-
-                        let isLate = w.lastCallResult === 'رد' && w.timestamp && (new Date(w.timestamp) >= deadlineTime);
-                        let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'لم يرد' && w.lastCallResult !== 'لم يفتقد' && w.lastCallResult !== 'لم يفتقد بعد';
-                        
-                        if (isLate || isNotCompleted) {
-                            w.lastCallResult = 'الخادم لم يفتقد';
-                            w.timestamp = new Date().toISOString();
-                            changed = true;
-                        }
+                    let isLate = w.lastCallResult === 'رد' && w.timestamp && (new Date(w.timestamp) >= deadlineTime);
+                    let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'لم يفتقد' && w.lastCallResult !== 'لم يفتقد بعد';
+                    
+                    if (isLate || isNotCompleted) {
+                        w.lastCallResult = 'لم يفتقد';
+                        w.timestamp = new Date().toISOString();
+                        changed = true;
                     }
                 }
             });
-
             if (changed) localStorage.setItem('waznat', JSON.stringify(waznat));
             if (deadlineListChanged) {
                 deadlines[me.priestUser] = deadlineList;
