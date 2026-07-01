@@ -42,6 +42,8 @@
     <script>
     window.originalSetItem = localStorage.setItem;
     (function() {
+        sanitizeWaznatFamilies();
+        sanitizeServantsFamilies();
         const savedTheme = localStorage.getItem('servantDashboardTheme');
         if (savedTheme === 'dark') {
             document.documentElement.setAttribute('data-bs-theme', 'dark');
@@ -813,6 +815,104 @@
             cropCtx.beginPath();
             cropCtx.arc(cx, cy, radius, 0, Math.PI * 2);
             cropCtx.stroke();
+        }
+
+        function sanitizeWaznatFamilies() {
+            try {
+                let waznat = JSON.parse(localStorage.getItem('waznat') || '[]');
+                let priestServices = JSON.parse(localStorage.getItem('priestServices') || '[]');
+                
+                let validOsras = ['عام'];
+                priestServices.forEach(ps => {
+                    if (ps.osras) {
+                        ps.osras.forEach(o => {
+                            if (o.name && !validOsras.includes(o.name)) {
+                                validOsras.push(o.name);
+                            }
+                        });
+                    }
+                });
+
+                let changed = false;
+                waznat.forEach(w => {
+                    if (w.osra && !validOsras.includes(w.osra)) {
+                        w.osra = 'عام';
+                        w.fasl = 'عام';
+                        changed = true;
+                    }
+                });
+
+                if (changed) {
+                    localStorage.setItem('waznat', JSON.stringify(waznat));
+                }
+            } catch (e) {
+                console.error("Error in sanitizeWaznatFamilies:", e);
+            }
+        }
+
+        function sanitizeServantsFamilies() {
+            try {
+                let servants = JSON.parse(localStorage.getItem('servants') || '[]');
+                let priestServices = JSON.parse(localStorage.getItem('priestServices') || '[]');
+                
+                let validOsras = ['عام'];
+                priestServices.forEach(ps => {
+                    if (ps.osras) {
+                        ps.osras.forEach(o => {
+                            if (o.name && !validOsras.includes(o.name)) {
+                                validOsras.push(o.name);
+                            }
+                        });
+                    }
+                });
+
+                let validFasls = ['عام'];
+                priestServices.forEach(ps => {
+                    if (ps.osras) {
+                        ps.osras.forEach(o => {
+                            if (o.fasls) {
+                                o.fasls.forEach(f => {
+                                    if (!validFasls.includes(f)) {
+                                        validFasls.push(f);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+
+                let changed = false;
+                servants.forEach(s => {
+                    if (s.osra) {
+                        let osraList = s.osra.split(',').map(o => o.trim()).filter(Boolean);
+                        let cleanedOsraList = osraList.filter(o => validOsras.includes(o));
+                        let newOsra = cleanedOsraList.join(', ') || 'عام';
+                        if (newOsra !== s.osra) {
+                            s.osra = newOsra;
+                            changed = true;
+                        }
+                    }
+                    if (s.fasl) {
+                        let faslList = s.fasl.split(',').map(f => f.trim()).filter(Boolean);
+                        let cleanedFaslList = faslList.filter(f => validFasls.includes(f));
+                        let newFasl = cleanedFaslList.join(', ') || 'عام';
+                        if (newFasl !== s.fasl) {
+                            s.fasl = newFasl;
+                            changed = true;
+                        }
+                    }
+                    if (s.osra === 'عام' && s.fasl !== 'عام') {
+                        s.fasl = 'عام';
+                        changed = true;
+                    }
+                });
+
+                if (changed) {
+                    localStorage.setItem('servants', JSON.stringify(servants));
+                }
+            } catch (e) {
+                console.error("Error in sanitizeServantsFamilies:", e);
+            }
         }
 
         document.addEventListener("DOMContentLoaded", () => {
