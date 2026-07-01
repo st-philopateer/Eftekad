@@ -29,6 +29,14 @@
         .msg-hover-container:hover .msg-actions-hover {
             opacity: 1;
         }
+        [data-bs-theme="dark"] .bg-white.text-dark {
+            background-color: var(--bs-body-bg) !important;
+            color: var(--bs-body-color) !important;
+            border-color: var(--bs-border-color) !important;
+        }
+        [data-bs-theme="dark"] .bg-white.text-dark .text-muted {
+            color: rgba(255, 255, 255, 0.6) !important;
+        }
     </style>
     <script>
         window.originalSetItem = localStorage.setItem;
@@ -863,6 +871,10 @@
                                 <option value="servant">خادم محدد</option>
                             </select>
                         </div>
+                        <div class="col-md-2 d-none" id="reportOsraFilterWrap">
+                            <label class="form-label fw-bold">اختر الأسرة</label>
+                            <select id="reportOsraFilter" class="form-select auth-input" onchange="handleReportOsraFilterChange()"></select>
+                        </div>
                         <div class="col-md-3" id="reportScopeValueWrap">
                             <label class="form-label fw-bold">تحديد النطاق</label>
                             <select id="reportScopeValue" class="form-select auth-input scope-select-hidden" onchange="handlePeriodTypeChange()"></select>
@@ -1509,7 +1521,7 @@
             cropCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
             cropCtx.beginPath();
             cropCtx.rect(0, 0, cropCanvas.width, cropCanvas.height);
-            let radius = 110;
+            let radius = 130;
             let cx = cropCanvas.width / 2;
             let cy = cropCanvas.height / 2;
             cropCtx.arc(cx, cy, radius, 0, Math.PI * 2, true);
@@ -1583,7 +1595,7 @@
             outCanvas.height = 150;
             const outCtx = outCanvas.getContext('2d');
             
-            let radius = 110;
+            let radius = 130;
             let cx = cropCanvas.width / 2;
             let cy = cropCanvas.height / 2;
             let sx = cx - radius;
@@ -2315,12 +2327,75 @@
             }
         }
 
+        function handleReportOsraFilterChange() {
+            const scope = document.getElementById('reportScope').value;
+            const osraVal = document.getElementById('reportOsraFilter').value;
+            const valueSelect = document.getElementById('reportScopeValue');
+            
+            valueSelect.innerHTML = '';
+            if (!osraVal) {
+                valueSelect.innerHTML = '<option value="">يرجى اختيار الأسرة أولاً...</option>';
+                valueSelect.disabled = true;
+                handlePeriodTypeChange();
+                return;
+            }
+            
+            valueSelect.disabled = false;
+            valueSelect.innerHTML = '<option value="">اختر من القائمة</option>';
+            
+            let curr = JSON.parse(localStorage.getItem('currentPriest'));
+            let osras = getPriestServices();
+            let allServants = JSON.parse(localStorage.getItem('servants') || '[]');
+            let myServants = allServants.filter(s => s.priestUser === curr.username);
+            
+            if (scope === 'fasl') {
+                const targetOsra = osras.find(o => o.name === osraVal);
+                const fasls = (targetOsra && targetOsra.fasls) ? targetOsra.fasls : [];
+                fasls.forEach(f => {
+                    valueSelect.innerHTML += `<option value="${f}">${f}</option>`;
+                });
+            } else if (scope === 'servant') {
+                const filtered = myServants.filter(s => s.osra && s.osra.split(',').map(o => o.trim()).includes(osraVal));
+                filtered.forEach(s => {
+                    let displayName = s.fullName || s.username;
+                    valueSelect.innerHTML += `<option value="${s.username}">${displayName} (${s.username})</option>`;
+                });
+            }
+            
+            handlePeriodTypeChange();
+        }
+
         function updateReportScopeOptions() {
             const scope = document.getElementById('reportScope').value;
-            populateScopeSelect(document.getElementById('reportScopeValue'), scope, 'اختر من القائمة');
             const wrap = document.getElementById('reportScopeValueWrap');
-            if (scope === 'all') wrap.classList.add('scope-select-hidden');
-            else wrap.classList.remove('scope-select-hidden');
+            const osraWrap = document.getElementById('reportOsraFilterWrap');
+            const valueSelect = document.getElementById('reportScopeValue');
+            const osraSelect = document.getElementById('reportOsraFilter');
+            
+            valueSelect.disabled = false;
+            
+            if (scope === 'all') {
+                wrap.classList.add('scope-select-hidden');
+                osraWrap.classList.add('d-none');
+                valueSelect.value = '';
+            } else if (scope === 'osra') {
+                wrap.classList.remove('scope-select-hidden');
+                osraWrap.classList.add('d-none');
+                populateScopeSelect(valueSelect, 'osra', 'اختر الأسرة');
+            } else {
+                wrap.classList.remove('scope-select-hidden');
+                osraWrap.classList.remove('d-none');
+                
+                osraSelect.innerHTML = '<option value="">اختر الأسرة...</option>';
+                let osras = getPriestServices();
+                osras.forEach(o => {
+                    osraSelect.innerHTML += `<option value="${o.name}">${o.name}</option>`;
+                });
+                
+                valueSelect.innerHTML = '<option value="">يرجى اختيار الأسرة أولاً...</option>';
+                valueSelect.disabled = true;
+            }
+            
             handlePeriodTypeChange();
         }
 
@@ -3483,48 +3558,62 @@ window.onload = function() {
             // 2. Osra channels
             if (osras.length > 0) {
                 html += `<div class="list-group-header mt-3 mb-1 text-muted small fw-bold"><i class="fas fa-sitemap me-1"></i> شات الأسر والخدمات</div>`;
+                html += `<input type="text" placeholder="بحث في الأسر..." class="form-control form-control-sm mb-1 chat-search-input" onkeyup="filterSelectOptions(this, 'osraChatSelect')">`;
                 html += `<select id="osraChatSelect" class="form-select auth-input mb-2 chat-select-dropdown" onchange="selectChatFromDropdown(this)">`;
                 html += `<option value="">اختر الأسرة/الخدمة...</option>`;
                 osras.forEach(o => {
                     let osraChatId = `osra_${o.name}_${curr.username}`;
-                    let selected = (selectedChatId === osraChatId) ? 'selected' : '';
+                    let selected = (selectedChatId === osraChatId || window.chatSelectedOsraName === o.name) ? 'selected' : '';
+                    if (selected) {
+                        window.chatSelectedOsraName = o.name;
+                    }
                     html += `<option value="${osraChatId}" data-chat-name="شات أسرة: ${o.name}" ${selected}>أسرة: ${o.name}${getChatUnreadLabel(osraChatId)}</option>`;
                 });
                 html += `</select>`;
             }
 
             // 3. Fasl channels
-            let tempFaslOptions = '';
-            osras.forEach(o => {
-                if (o.fasls && o.fasls.length > 0) {
-                    o.fasls.forEach(f => {
-                        let faslChatId = `fasl_${o.name}_${f}_${curr.username}`;
+            let selectedOsraObj = osras.find(o => o.name === window.chatSelectedOsraName);
+            let hasSelectedOsra = !!selectedOsraObj;
+
+            html += `<div class="list-group-header mt-2 mb-1 text-muted small fw-bold"><i class="fas fa-school me-1"></i> شات الفصول</div>`;
+            if (hasSelectedOsra) {
+                html += `<input type="text" placeholder="بحث في الفصول..." class="form-control form-control-sm mb-1 chat-search-input" onkeyup="filterSelectOptions(this, 'faslChatSelect')">`;
+            }
+            html += `<select id="faslChatSelect" class="form-select auth-input mb-2 chat-select-dropdown" onchange="selectChatFromDropdown(this)" ${hasSelectedOsra ? '' : 'disabled'}>`;
+            if (!hasSelectedOsra) {
+                html += `<option value="">يرجى اختيار الأسرة أولاً...</option>`;
+            } else {
+                html += `<option value="">اختر الفصل...</option>`;
+                if (selectedOsraObj.fasls && selectedOsraObj.fasls.length > 0) {
+                    selectedOsraObj.fasls.forEach(f => {
+                        let faslChatId = `fasl_${selectedOsraObj.name}_${f}_${curr.username}`;
                         let selected = (selectedChatId === faslChatId) ? 'selected' : '';
-                        tempFaslOptions += `<option value="${faslChatId}" data-chat-name="شات فصل: ${f} (${o.name})" ${selected}>فصل: ${f} (${o.name})${getChatUnreadLabel(faslChatId)}</option>`;
+                        html += `<option value="${faslChatId}" data-chat-name="شات فصل: ${f} (${selectedOsraObj.name})" ${selected}>فصل: ${f} (${selectedOsraObj.name})${getChatUnreadLabel(faslChatId)}</option>`;
                     });
                 }
-            });
-            if (tempFaslOptions) {
-                html += `<div class="list-group-header mt-2 mb-1 text-muted small fw-bold"><i class="fas fa-school me-1"></i> شات الفصول</div>`;
-                html += `<select id="faslChatSelect" class="form-select auth-input mb-2 chat-select-dropdown" onchange="selectChatFromDropdown(this)">`;
-                html += `<option value="">اختر الفصل...</option>`;
-                html += tempFaslOptions;
-                html += `</select>`;
             }
+            html += `</select>`;
 
             // 4. Private chats with Servants
-            if (myServants.length > 0) {
-                html += `<div class="list-group-header mt-2 mb-1 text-muted small fw-bold"><i class="fas fa-user-tie me-1"></i> المحادثات الخاصة (الخدام)</div>`;
-                html += `<select id="servantChatSelect" class="form-select auth-input mb-2 chat-select-dropdown" onchange="selectChatFromDropdown(this)">`;
+            html += `<div class="list-group-header mt-2 mb-1 text-muted small fw-bold"><i class="fas fa-user-tie me-1"></i> المحادثات الخاصة (الخدام)</div>`;
+            if (hasSelectedOsra) {
+                html += `<input type="text" placeholder="بحث في الخدام..." class="form-control form-control-sm mb-1 chat-search-input" onkeyup="filterSelectOptions(this, 'servantChatSelect')">`;
+            }
+            html += `<select id="servantChatSelect" class="form-select auth-input mb-2 chat-select-dropdown" onchange="selectChatFromDropdown(this)" ${hasSelectedOsra ? '' : 'disabled'}>`;
+            if (!hasSelectedOsra) {
+                html += `<option value="">يرجى اختيار الأسرة أولاً...</option>`;
+            } else {
                 html += `<option value="">اختر الخادم...</option>`;
-                myServants.forEach(s => {
+                let filteredServants = myServants.filter(s => s.osra && s.osra.split(',').map(o => o.trim()).includes(window.chatSelectedOsraName));
+                filteredServants.forEach(s => {
                     let displayName = s.fullName || s.username;
                     let pvtChatId = `servant_${s.username}_${curr.username}`;
                     let selected = (selectedChatId === pvtChatId) ? 'selected' : '';
                     html += `<option value="${pvtChatId}" data-chat-name="محادثة خاصة: ${displayName}" ${selected}>${displayName} (${s.username})${getChatUnreadLabel(pvtChatId)}</option>`;
                 });
-                html += `</select>`;
             }
+            html += `</select>`;
 
             container.innerHTML = html;
 
@@ -3548,6 +3637,21 @@ window.onload = function() {
             });
         }
 
+        function filterSelectOptions(input, selectId) {
+            const select = document.getElementById(selectId);
+            if (!select) return;
+            const filter = input.value.toLowerCase();
+            const options = select.options;
+            for (let i = 1; i < options.length; i++) {
+                const text = options[i].text.toLowerCase();
+                if (text.includes(filter)) {
+                    options[i].style.display = "";
+                } else {
+                    options[i].style.display = "none";
+                }
+            }
+        }
+
         function selectChatFromDropdown(selectElement) {
             const option = selectElement.options[selectElement.selectedIndex];
             const chatId = selectElement.value;
@@ -3560,6 +3664,13 @@ window.onload = function() {
                     sel.value = '';
                 }
             });
+
+            // Extract family name if they selected an Osra
+            if (selectElement.id === 'osraChatSelect') {
+                let parts = chatId.split('_');
+                window.chatSelectedOsraName = parts[1];
+                populateChatRecipients();
+            }
 
             selectedChatId = chatId;
             selectedChatName = option.getAttribute('data-chat-name');
@@ -4888,9 +4999,15 @@ window.onload = function() {
         function deleteDeadline(id) {
             if (!confirm('هل تريد حذف هذا الديدلاين؟')) return;
             let curr = JSON.parse(localStorage.getItem('currentPriest'));
-            let list = getPriestDeadlinesList(curr.username).filter(d => String(d.id) !== String(id));
+            let list = getPriestDeadlinesList(curr.username);
+            let dl = list.find(d => String(d.id) === String(id));
+            if (dl) {
+                resetVisitationStatusesForDeadline(curr.username, dl.scope, dl.scopeValue);
+            }
+            list = list.filter(d => String(d.id) !== String(id));
             savePriestDeadlinesList(curr.username, list);
             renderSavedDeadlines();
+            updateDashboardStats();
         }
 
         function renderSavedDeadlines() {
@@ -4950,10 +5067,10 @@ window.onload = function() {
 
                     let deadlineTime = new Date(applicable.datetime);
                     let isLate = w.lastCallResult === 'رد' && w.timestamp && (new Date(w.timestamp) >= deadlineTime);
-                    let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'لم يرد' && w.lastCallResult !== 'لم يفتقد';
+                    let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'لم يرد' && w.lastCallResult !== 'الخادم لم يفتقد' && w.lastCallResult !== 'لم يفتقد' && w.lastCallResult !== 'لم يفتقد بعد';
                     
                     if (isLate || isNotCompleted) {
-                        w.lastCallResult = 'لم يفتقد';
+                        w.lastCallResult = 'الخادم لم يفتقد';
                         w.timestamp = new Date().toISOString();
                         changed = true;
                     }
@@ -4980,10 +5097,10 @@ window.onload = function() {
             let myWaznat = allWaznat.filter(w => myServantUsernames.includes(w.servantUser));
 
             // الكود الجديد لحساب حالة لم يفتقد ضمن الإحصائيات
-            let completed = myWaznat.filter(w => w.lastCallResult === 'رد').length;
-            let uncompleted = myWaznat.filter(w => w.lastCallResult === 'لم يرد' || w.lastCallResult === 'إلغاء').length;
-            let missed = myWaznat.filter(w => w.lastCallResult === 'لم يفتقد').length; // إضافة هذا السطر
-            let totalCalls = completed + uncompleted + missed; // تحديث الإجمالي
+            let completed = myWaznat.filter(w => w.lastCallResult === 'رد' || w.lastCallResult === 'لم يرد').length;
+            let uncompleted = myWaznat.filter(w => w.lastCallResult === 'لم يتم الاتصال بعد' || w.lastCallResult === 'الخادم لم يفتقد' || w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد' || w.lastCallResult === 'إلغاء').length;
+            let missed = myWaznat.filter(w => w.lastCallResult === 'الخادم لم يفتقد' || w.lastCallResult === 'لم يفتقد' || w.lastCallResult === 'لم يفتقد بعد').length;
+            let totalCalls = completed + missed;
 
 
             let percentage = 0;
@@ -5011,7 +5128,7 @@ window.onload = function() {
                         return w.osra === name;
                     });
                     let total = waznatInOsra.length;
-                    let completed = waznatInOsra.filter(w => w.lastCallResult === 'رد').length;
+                    let completed = waznatInOsra.filter(w => w.lastCallResult === 'رد' || w.lastCallResult === 'لم يرد').length;
                     let rate = total > 0 ? Math.round((completed / total) * 100) : 0;
                     osraRates.push(rate);
                 });
@@ -5279,17 +5396,33 @@ window.onload = function() {
             const osraName = btn.getAttribute('data-name');
             if (confirm(`هل أنت متأكد من حذف أسرة "${osraName}" بالكامل؟`)) {
                 let osras = getPriestServices();
+                let targetOsraObj = osras.find(o => o.name === osraName);
+                let deletedFasls = (targetOsraObj && targetOsraObj.fasls) ? targetOsraObj.fasls : [];
+
                 osras = osras.filter(o => o.name !== osraName);
                 savePriestServices(osras);
 
-                // تحديث الخدام التابعين لهذه الأسرة لتصبح خدمتهم "عام"
+                // تحديث الخدام التابعين لهذه الأسرة
                 let servants = JSON.parse(localStorage.getItem('servants') || '[]');
                 let updated = false;
                 servants.forEach(s => {
-                    if (s.osra === osraName) {
-                        s.osra = 'عام';
-                        s.fasl = 'عام';
-                        updated = true;
+                    if (s.osra) {
+                        let osraList = s.osra.split(',').map(o => o.trim()).filter(Boolean);
+                        if (osraList.includes(osraName)) {
+                            osraList = osraList.filter(o => o !== osraName);
+                            s.osra = osraList.join(', ') || 'عام';
+
+                            // Clean up classes belonging to that family
+                            if (s.fasl) {
+                                let faslList = s.fasl.split(',').map(f => f.trim()).filter(Boolean);
+                                faslList = faslList.filter(f => !deletedFasls.includes(f));
+                                s.fasl = faslList.join(', ') || 'عام';
+                            }
+                            if (s.osra === 'عام') {
+                                s.fasl = 'عام';
+                            }
+                            updated = true;
+                        }
                     }
                 });
                 if (updated) {
@@ -5785,6 +5918,23 @@ window.onload = function() {
                 servants[index].email = email;
                 
                 localStorage.setItem('servants', JSON.stringify(servants));
+                
+                // Cascade 'عام' family to all waznat of this servant
+                if (osra === 'عام') {
+                    let waznat = JSON.parse(localStorage.getItem('waznat') || '[]');
+                    let changed = false;
+                    waznat.forEach(w => {
+                        if (w.servantUser === username) {
+                            w.osra = 'عام';
+                            w.fasl = 'عام';
+                            changed = true;
+                        }
+                    });
+                    if (changed) {
+                        localStorage.setItem('waznat', JSON.stringify(waznat));
+                    }
+                }
+                
                 loadServantsTable();
                 closeServantProfileEditor();
 
