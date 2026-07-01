@@ -394,7 +394,7 @@
                         <div class="modal-body p-4 text-center">
                             <p class="text-muted small mb-3">قم بسحب الصورة وتكبيرها لتحديد الجزء المطلوب</p>
                             <div class="position-relative mx-auto mb-3 crop-preview-box">
-                                <canvas id="cropCanvas" width="280" height="280" class="crop-canvas-box"></canvas>
+                                <canvas id="cropCanvas" width="360" height="360" class="crop-canvas-box"></canvas>
                             </div>
                             <div class="mb-3 px-3">
                                 <label class="form-label small fw-bold text-muted d-block text-start">التكبير والتصغير</label>
@@ -804,7 +804,7 @@
             cropCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
             cropCtx.beginPath();
             cropCtx.rect(0, 0, cropCanvas.width, cropCanvas.height);
-            let radius = 130;
+            let radius = 165;
             let cx = cropCanvas.width / 2;
             let cy = cropCanvas.height / 2;
             cropCtx.arc(cx, cy, radius, 0, Math.PI * 2, true);
@@ -976,7 +976,7 @@
             outCanvas.height = 150;
             const outCtx = outCanvas.getContext('2d');
             
-            let radius = 130;
+            let radius = 165;
             let cx = cropCanvas.width / 2;
             let cy = cropCanvas.height / 2;
             let sx = cx - radius;
