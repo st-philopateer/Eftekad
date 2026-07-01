@@ -6107,6 +6107,16 @@ window.onload = function() {
 
         async function syncFromServer() {
             if (!isServerMode()) return;
+            if (!navigator.onLine) return;
+
+            // معالجة التعديلات المعلقة لحماية البيانات المحلية من الاستبدال بالقديم
+            let queue = JSON.parse(localStorage.getItem('pending_deltas') || '[]');
+            if (queue.length > 0) {
+                await processPendingDeltas();
+                queue = JSON.parse(localStorage.getItem('pending_deltas') || '[]');
+                if (queue.length > 0) return;
+            }
+
             try {
                 const res = await fetch('/api/sync?t=' + Date.now());
                 const data = await res.json();
@@ -6221,6 +6231,16 @@ window.onload = function() {
         let isSyncing = false;
         async function syncWithServerRealtime(pusherData = null) {
             if (!isServerMode() || isSyncing) return;
+            if (!navigator.onLine) return;
+
+            // معالجة التعديلات المعلقة لحماية البيانات المحلية من الاستبدال بالقديم
+            let queue = JSON.parse(localStorage.getItem('pending_deltas') || '[]');
+            if (queue.length > 0) {
+                await processPendingDeltas();
+                queue = JSON.parse(localStorage.getItem('pending_deltas') || '[]');
+                if (queue.length > 0) return;
+            }
+
             isSyncing = true;
             try {
                 let serverVersions;
@@ -6401,30 +6421,54 @@ window.onload = function() {
             const prev = prevValue ? JSON.parse(prevValue) : (key === 'deadlines' ? {} : []);
             const next = JSON.parse(value);
 
-            activeDeltaSyncs[key] = (activeDeltaSyncs[key] || 0) + 1;
+            // إضافة التعديل لقائمة الانتظار الأوفلاين
+            let queue = JSON.parse(localStorage.getItem('pending_deltas') || '[]');
+            queue.push({ key, prev, next });
+            originalSetItem.call(localStorage, 'pending_deltas', JSON.stringify(queue));
 
-            fetch('/api/sync/delta', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ key, prev, next })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success && data.merged) {
-                    originalSetItem.call(localStorage, key, JSON.stringify(data.merged));
-                    if (data.versions) {
-                        originalSetItem.call(localStorage, 'local_versions', JSON.stringify(data.versions));
-                    }
-                }
-            })
-            .catch(err => console.error("Sync delta to server failed:", err))
-            .finally(() => {
-                activeDeltaSyncs[key] = Math.max(0, (activeDeltaSyncs[key] || 0) - 1);
-            });
+            processPendingDeltas();
         }
         localStorage.setItem = customSetItem;
 
+        let isProcessingQueue = false;
+        async function processPendingDeltas() {
+            if (isProcessingQueue || !navigator.onLine) return;
+            isProcessingQueue = true;
+            try {
+                let queue = JSON.parse(localStorage.getItem('pending_deltas') || '[]');
+                while (queue.length > 0) {
+                    let item = queue[0];
+                    activeDeltaSyncs[item.key] = (activeDeltaSyncs[item.key] || 0) + 1;
+                    const res = await fetch('/api/sync/delta', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ key: item.key, prev: item.prev, next: item.next })
+                    });
+                    const data = await res.json();
+                    if (data.success && data.merged) {
+                        originalSetItem.call(localStorage, item.key, JSON.stringify(data.merged));
+                        if (data.versions) {
+                            originalSetItem.call(localStorage, 'local_versions', JSON.stringify(data.versions));
+                        }
+                    }
+                    queue.shift();
+                    originalSetItem.call(localStorage, 'pending_deltas', JSON.stringify(queue));
+                    activeDeltaSyncs[item.key] = Math.max(0, (activeDeltaSyncs[item.key] || 0) - 1);
+                }
+            } catch (err) {
+                console.error("Error processing pending deltas queue:", err);
+            } finally {
+                isProcessingQueue = false;
+            }
+        }
+
+        window.addEventListener('online', () => {
+            console.log("🌐 متصل بالإنترنت! جاري رفع البيانات المعلقة...");
+            processPendingDeltas();
+        });
+
         document.addEventListener("DOMContentLoaded", async () => {
+            processPendingDeltas();
             if ('serviceWorker' in navigator && isServerMode()) {
                 let refreshing = false;
                 navigator.serviceWorker.addEventListener('controllerchange', () => {
