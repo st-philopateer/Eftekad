@@ -2332,6 +2332,7 @@
             const osraVal = document.getElementById('reportOsraFilter').value;
             const valueSelect = document.getElementById('reportScopeValue');
             
+            valueSelect.classList.remove('scope-select-hidden');
             valueSelect.innerHTML = '';
             if (!osraVal) {
                 valueSelect.innerHTML = '<option value="">يرجى اختيار الأسرة أولاً...</option>';
@@ -2376,14 +2377,17 @@
             
             if (scope === 'all') {
                 wrap.classList.add('scope-select-hidden');
+                valueSelect.classList.add('scope-select-hidden');
                 osraWrap.classList.add('d-none');
                 valueSelect.value = '';
             } else if (scope === 'osra') {
                 wrap.classList.remove('scope-select-hidden');
+                valueSelect.classList.remove('scope-select-hidden');
                 osraWrap.classList.add('d-none');
                 populateScopeSelect(valueSelect, 'osra', 'اختر الأسرة');
             } else {
                 wrap.classList.remove('scope-select-hidden');
+                valueSelect.classList.remove('scope-select-hidden');
                 osraWrap.classList.remove('d-none');
                 
                 osraSelect.innerHTML = '<option value="">اختر الأسرة...</option>';

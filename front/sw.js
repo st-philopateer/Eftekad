@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ghedma-cache-v67';
+const CACHE_NAME = 'ghedma-cache-v68';
 const ASSETS = [
   '/',
   '/priest',
