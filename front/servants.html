@@ -1240,6 +1240,30 @@
             return dl;
         }
 
+        function getWaznaApplicableDeadline(deadlineList, w, servant) {
+            const priorities = { servant: 3, fasl: 2, osra: 1, all: 0 };
+            let best = null;
+            let bestPriority = -1;
+            deadlineList.forEach(dl => {
+                let matches = false;
+                if (dl.scope === 'all') {
+                    matches = true;
+                } else if (dl.scope === 'osra' && w.osra === dl.scopeValue) {
+                    matches = true;
+                } else if (dl.scope === 'fasl' && w.fasl === dl.scopeValue) {
+                    matches = true;
+                } else if (dl.scope === 'servant' && w.servantUser === dl.scopeValue) {
+                    matches = true;
+                }
+                
+                if (matches && priorities[dl.scope] > bestPriority) {
+                    best = dl;
+                    bestPriority = priorities[dl.scope];
+                }
+            });
+            return best;
+        }
+
         function checkDeadlines() {
             let currServant = JSON.parse(localStorage.getItem('currentServant'));
             if (!currServant) return;
@@ -1254,50 +1278,41 @@
 
             let deadlineList = Array.isArray(data)
                 ? data.map(normalizeServantDeadline)
-                : (data.timestamp ? [{ scope: 'all', scopeValue: '', datetime: data.timestamp, id: 'legacy' }] : []);
+                : (data.timestamp ? [{ id: 'legacy', scope: 'all', scopeValue: '', datetime: data.timestamp }] : []);
 
             let deadlineListChanged = false;
 
             if (deadlineList.length === 0) return;
 
-            const priorities = { servant: 3, fasl: 2, osra: 1, all: 0 };
-            let applicable = null;
-            let bestPriority = -1;
-            deadlineList.forEach(dl => {
-                let matches = dl.scope === 'all' ||
-                    (dl.scope === 'osra' && me.osra && me.osra.split(',').map(o => o.trim()).includes(dl.scopeValue)) ||
-                    (dl.scope === 'fasl' && me.fasl && me.fasl.split(',').map(f => f.trim()).includes(dl.scopeValue)) ||
-                    (dl.scope === 'servant' && me.username === dl.scopeValue);
-                if (matches && priorities[dl.scope] > bestPriority) {
-                    applicable = dl;
-                    bestPriority = priorities[dl.scope];
-                }
-            });
-            if (!applicable || !applicable.datetime) return;
-
-            const passed = new Date() >= new Date(applicable.datetime);
-            if (!passed) return;
-            let dbDl = deadlineList.find(d => d.id === applicable.id);
-            if (dbDl && !dbDl.applied) {
-                dbDl.applied = true;
-                deadlineListChanged = true;
-            }
-
             let waznat = JSON.parse(localStorage.getItem('waznat') || '[]');
             let changed = false;
-            let deadlineTime = new Date(applicable.datetime);
+
             waznat.forEach(w => {
                 if (w.servantUser === currServant.username) {
-                    let isLate = w.lastCallResult === 'رد' && w.timestamp && (new Date(w.timestamp) >= deadlineTime);
-                    let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'لم يرد' && w.lastCallResult !== 'لم يفتقد' && w.lastCallResult !== 'لم يفتقد بعد';
-                    
-                    if (isLate || isNotCompleted) {
-                        w.lastCallResult = 'لم يفتقد';
-                        w.timestamp = new Date().toISOString();
-                        changed = true;
+                    let applicable = getWaznaApplicableDeadline(deadlineList, w, me);
+                    if (!applicable || !applicable.datetime) return;
+
+                    let deadlineTime = new Date(applicable.datetime);
+                    const passed = new Date() >= deadlineTime;
+                    if (passed) {
+                        let dbDl = deadlineList.find(d => d.id === applicable.id);
+                        if (dbDl && !dbDl.applied) {
+                            dbDl.applied = true;
+                            deadlineListChanged = true;
+                        }
+
+                        let isLate = w.lastCallResult === 'رد' && w.timestamp && (new Date(w.timestamp) >= deadlineTime);
+                        let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'لم يرد' && w.lastCallResult !== 'لم يفتقد' && w.lastCallResult !== 'لم يفتقد بعد';
+                        
+                        if (isLate || isNotCompleted) {
+                            w.lastCallResult = 'لم يفتقد';
+                            w.timestamp = new Date().toISOString();
+                            changed = true;
+                        }
                     }
                 }
             });
+
             if (changed) localStorage.setItem('waznat', JSON.stringify(waznat));
             if (deadlineListChanged) {
                 deadlines[me.priestUser] = deadlineList;

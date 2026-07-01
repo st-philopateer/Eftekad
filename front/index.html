@@ -4747,15 +4747,40 @@ window.onload = function() {
             localStorage.setItem('deadlines', JSON.stringify(deadlines));
         }
 
+        function getWaznaApplicableDeadline(deadlineList, w, servant) {
+            const priorities = { servant: 3, fasl: 2, osra: 1, all: 0 };
+            let best = null;
+            let bestPriority = -1;
+            deadlineList.forEach(dl => {
+                let matches = false;
+                if (dl.scope === 'all') {
+                    matches = true;
+                } else if (dl.scope === 'osra' && w.osra === dl.scopeValue) {
+                    matches = true;
+                } else if (dl.scope === 'fasl' && w.fasl === dl.scopeValue) {
+                    matches = true;
+                } else if (dl.scope === 'servant' && w.servantUser === dl.scopeValue) {
+                    matches = true;
+                }
+                
+                if (matches && priorities[dl.scope] > bestPriority) {
+                    best = dl;
+                    bestPriority = priorities[dl.scope];
+                }
+            });
+            return best;
+        }
+
         function getApplicableDeadline(deadlineList, servant) {
+            // Deprecated but kept for safety
             const priorities = { servant: 3, fasl: 2, osra: 1, all: 0 };
             let best = null;
             let bestPriority = -1;
             deadlineList.forEach(dl => {
                 let matches = false;
                 if (dl.scope === 'all') matches = true;
-                else if (dl.scope === 'osra' && servant.osra === dl.scopeValue) matches = true;
-                else if (dl.scope === 'fasl' && servant.fasl === dl.scopeValue) matches = true;
+                else if (dl.scope === 'osra' && servant.osra && servant.osra.split(',').map(o => o.trim()).includes(dl.scopeValue)) matches = true;
+                else if (dl.scope === 'fasl' && servant.fasl && servant.fasl.split(',').map(f => f.trim()).includes(dl.scopeValue)) matches = true;
                 else if (dl.scope === 'servant' && servant.username === dl.scopeValue) matches = true;
                 if (matches && priorities[dl.scope] > bestPriority) {
                     best = dl;
@@ -4825,19 +4850,30 @@ window.onload = function() {
             let list = getPriestDeadlinesList(curr.username);
             const key = scope + '|' + (scopeValue || '');
             if (list.find(d => (d.scope + '|' + (d.scopeValue || '')) === key)) {
+                let parentOsra = '';
+                if (scope === 'fasl' || scope === 'servant') {
+                    const osraSelect = document.getElementById('deadlineScopeOsraSelect');
+                    if (osraSelect) parentOsra = osraSelect.value;
+                }
                 list = list.map(d => {
                     if ((d.scope + '|' + (d.scopeValue || '')) === key) {
-                        return { ...d, datetime: datetime, applied: false };
+                        return { ...d, datetime: datetime, applied: false, parentOsra: parentOsra };
                     }
                     return d;
                 });
             } else {
+                let parentOsra = '';
+                if (scope === 'fasl' || scope === 'servant') {
+                    const osraSelect = document.getElementById('deadlineScopeOsraSelect');
+                    if (osraSelect) parentOsra = osraSelect.value;
+                }
                 list.push({
                     id: Date.now(),
                     scope: scope,
                     scopeValue: scopeValue || '',
                     datetime: datetime,
-                    applied: false
+                    applied: false,
+                    parentOsra: parentOsra
                 });
             }
             
@@ -4897,8 +4933,11 @@ window.onload = function() {
             let myServants = servants.filter(s => s.priestUser === curr.username);
             let changed = false;
 
-            myServants.forEach(servant => {
-                let applicable = getApplicableDeadline(deadlineList, servant);
+            waznat.forEach(w => {
+                let srv = myServants.find(s => s.username === w.servantUser);
+                if (!srv) return;
+
+                let applicable = getWaznaApplicableDeadline(deadlineList, w, srv);
                 if (!applicable || !applicable.datetime) return;
 
                 const passed = new Date() >= new Date(applicable.datetime);
@@ -4910,18 +4949,14 @@ window.onload = function() {
                     }
 
                     let deadlineTime = new Date(applicable.datetime);
-                    waznat.forEach(w => {
-                        if (w.servantUser === servant.username) {
-                            let isLate = w.lastCallResult === 'رد' && w.timestamp && (new Date(w.timestamp) >= deadlineTime);
-                            let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'لم يرد' && w.lastCallResult !== 'لم يفتقد';
-                            
-                            if (isLate || isNotCompleted) {
-                                w.lastCallResult = 'لم يفتقد';
-                                w.timestamp = new Date().toISOString();
-                                changed = true;
-                            }
-                        }
-                    });
+                    let isLate = w.lastCallResult === 'رد' && w.timestamp && (new Date(w.timestamp) >= deadlineTime);
+                    let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'لم يرد' && w.lastCallResult !== 'لم يفتقد';
+                    
+                    if (isLate || isNotCompleted) {
+                        w.lastCallResult = 'لم يفتقد';
+                        w.timestamp = new Date().toISOString();
+                        changed = true;
+                    }
                 }
             });
 
@@ -6277,14 +6312,17 @@ window.onload = function() {
 <div class="modal fade" id="deadlineRenewalModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
-            <div class="modal-header bg-primary text-white border-0 py-3">
-                <h5 class="fw-bold m-0 w-100 text-center">تجديد مواعيد الافتقاد</h5>
+            <div class="modal-header bg-danger text-white border-0 py-3">
+                <h5 class="fw-bold m-0 w-100 text-center"><i class="fas fa-exclamation-triangle me-2"></i>انتهاء الموعد النهائي للافتقاد</h5>
             </div>
             <div class="modal-body p-4 text-center">
-                <p class="fw-bold">بدأ أسبوع خدمة جديد! هل تريد تجديد مواعيد الافتقاد تلقائياً للأسبوع القادم؟</p>
+                <div id="expiredDeadlinesList" class="text-start mb-4" style="max-height: 200px; overflow-y: auto;">
+                    <!-- Expired deadlines list will show here -->
+                </div>
+                <p class="fw-bold">هل تريد تجديد هذه المواعيد تلقائياً للأسبوع القادم؟</p>
                 <div class="d-flex justify-content-around mt-4">
-                    <button type="button" class="btn btn-primary px-4 py-2 fw-bold" onclick="autoRenewDeadlines()">نعم، تجديد تلقائي</button>
-                    <button type="button" class="btn btn-outline-secondary px-4 py-2 fw-bold" onclick="redirectToDeadlinePage()">لا، سأغير الموعد</button>
+                    <button type="button" class="btn btn-primary px-4 py-2 fw-bold" onclick="autoRenewExpiredDeadlines()">نعم، تجديد تلقائي</button>
+                    <button type="button" class="btn btn-outline-secondary px-4 py-2 fw-bold" onclick="dismissExpiredDeadlines()">إغلاق</button>
                 </div>
             </div>
         </div>
@@ -6315,76 +6353,119 @@ window.onload = function() {
         if (!curr) return;
 
         const priestUser = curr.username;
-        const osras = getPriestServices();
-        if (osras.length === 0) return;
+        const deadlineList = getPriestDeadlinesList(priestUser);
+        if (deadlineList.length === 0) return;
 
-        const lastRenewedStr = localStorage.getItem(`lastRenewed_${priestUser}`);
-        const lastRenewed = lastRenewedStr ? new Date(lastRenewedStr) : new Date(0);
-
-        let shouldShow = false;
-        for (const osra of osras) {
-            if (!osra.serviceDay) continue;
-            const lastCompletedDate = getLastCompletedServiceDate(osra.serviceDay);
-            if (lastCompletedDate && lastCompletedDate > lastRenewed) {
-                shouldShow = true;
-                break;
-            }
+        let shown = [];
+        try {
+            shown = JSON.parse(localStorage.getItem(`shownDeadlines_${priestUser}`) || '[]');
+        } catch (e) {
+            shown = [];
         }
 
-        if (shouldShow) {
-            const modalEl = document.getElementById('deadlineRenewalModal');
-            if (modalEl) {
-                const modal = new bootstrap.Modal(modalEl);
-                modal.show();
-            }
-        }
-    }
+        const now = new Date();
+        const expiredUnshown = deadlineList.filter(dl => {
+            return new Date(dl.datetime) <= now && !shown.includes(dl.id);
+        });
 
-    function resetVisitationStatuses(priestUser) {
-        let waznat = JSON.parse(localStorage.getItem('waznat') || '[]');
+        if (expiredUnshown.length === 0) return;
+
+        const listDiv = document.getElementById('expiredDeadlinesList');
+        if (!listDiv) return;
+
         let servants = JSON.parse(localStorage.getItem('servants') || '[]');
-        let myServantNames = servants.filter(s => s.priestUser === priestUser).map(s => s.username);
-        
-        waznat.forEach(w => {
-            if (myServantNames.includes(w.servantUser)) {
-                w.lastCallResult = 'لم يفتقد';
-                w.timestamp = null;
+
+        listDiv.innerHTML = expiredUnshown.map(dl => {
+            let msg = '';
+            if (dl.scope === 'all') {
+                msg = `⏰ الموعد النهائي <strong>العام</strong> لكافة الخدمات قد انتهى.`;
+            } else if (dl.scope === 'osra') {
+                msg = `⏰ الموعد النهائي لأسرة <strong>"${dl.scopeValue}"</strong> قد انتهى.`;
+            } else if (dl.scope === 'fasl') {
+                msg = `⏰ الموعد النهائي لفصل <strong>"${dl.scopeValue}"</strong> في أسرة <strong>"${dl.parentOsra || 'عام'}"</strong> قد انتهى.`;
+            } else if (dl.scope === 'servant') {
+                let srvName = dl.scopeValue;
+                let srvObj = servants.find(s => s.username === dl.scopeValue);
+                if (srvObj) srvName = srvObj.fullName || srvObj.username;
+                msg = `⏰ الموعد النهائي للافتقاد الخاص بالخادم <strong>"${srvName}"</strong> قد انتهى.`;
+            }
+            return `<div class="alert alert-danger py-2 mb-2 small">${msg}</div>`;
+        }).join('');
+
+        window.currentExpiredDeadlines = expiredUnshown;
+
+        const modalEl = document.getElementById('deadlineRenewalModal');
+        if (modalEl) {
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+    }
+
+    function autoRenewExpiredDeadlines() {
+        const curr = JSON.parse(localStorage.getItem('currentPriest'));
+        if (!curr) return;
+
+        const priestUser = curr.username;
+        const expired = window.currentExpiredDeadlines || [];
+        if (expired.length === 0) return;
+
+        let deadlines = getPriestDeadlinesList(priestUser);
+        let shown = [];
+        try {
+            shown = JSON.parse(localStorage.getItem(`shownDeadlines_${priestUser}`) || '[]');
+        } catch (e) {
+            shown = [];
+        }
+
+        expired.forEach(ex => {
+            let dl = deadlines.find(d => d.id === ex.id);
+            if (dl) {
+                const nextWeek = new Date(dl.datetime);
+                nextWeek.setDate(nextWeek.getDate() + 7);
+                dl.datetime = nextWeek.toISOString().slice(0, 16);
+                dl.applied = false;
+            }
+            resetVisitationStatusesForDeadline(priestUser, ex.scope, ex.scopeValue);
+            if (!shown.includes(ex.id)) {
+                shown.push(ex.id);
             }
         });
-        localStorage.setItem('waznat', JSON.stringify(waznat));
+
+        savePriestDeadlinesList(priestUser, deadlines);
+        localStorage.setItem(`shownDeadlines_${priestUser}`, JSON.stringify(shown));
+
+        let modal = bootstrap.Modal.getInstance(document.getElementById('deadlineRenewalModal'));
+        if (modal) modal.hide();
+        
+        alert("تم تجديد المواعيد وتصفير حالات الافتقاد للأسبوع القادم!");
+        updateDashboardStats();
     }
-<!-- Deploy Test -->
-    function autoRenewDeadlines() {
-        const priestUser = JSON.parse(localStorage.getItem("currentPriest"))?.username;
-        if (!priestUser) return;
-        
-        let deadlines = getPriestDeadlinesList(priestUser);
-        
-        let updatedDeadlines = deadlines.map(dl => {
-            const nextWeek = new Date(dl.datetime);
-            nextWeek.setDate(nextWeek.getDate() + 7);
-            return { ...dl, datetime: nextWeek.toISOString().slice(0, 16), applied: false };
+
+    function dismissExpiredDeadlines() {
+        const curr = JSON.parse(localStorage.getItem('currentPriest'));
+        if (!curr) return;
+
+        const priestUser = curr.username;
+        const expired = window.currentExpiredDeadlines || [];
+        if (expired.length === 0) return;
+
+        let shown = [];
+        try {
+            shown = JSON.parse(localStorage.getItem(`shownDeadlines_${priestUser}`) || '[]');
+        } catch (e) {
+            shown = [];
+        }
+
+        expired.forEach(ex => {
+            if (!shown.includes(ex.id)) {
+                shown.push(ex.id);
+            }
         });
 
-        resetVisitationStatuses(priestUser);
-        savePriestDeadlinesList(priestUser, updatedDeadlines);
-        localStorage.setItem(`lastRenewed_${priestUser}`, new Date().toISOString().split('T')[0]);
-        
-        bootstrap.Modal.getInstance(document.getElementById('deadlineRenewalModal')).hide();
-        alert("تم تجديد المواعيد وتصفير حالات الافتقاد للأسبوع القادم!");
-    }
+        localStorage.setItem(`shownDeadlines_${priestUser}`, JSON.stringify(shown));
 
-    function redirectToDeadlinePage() {
-        const priestUser = JSON.parse(localStorage.getItem("currentPriest"))?.username;
-        if (!priestUser) return;
-
-        resetVisitationStatuses(priestUser);
-        savePriestDeadlinesList(priestUser, []);
-        localStorage.setItem(`lastRenewed_${priestUser}`, new Date().toISOString().split('T')[0]);
-        
-        bootstrap.Modal.getInstance(document.getElementById('deadlineRenewalModal')).hide();
-        switchTab('deadlineTab', document.querySelector('[onclick*="deadlineTab"]'));
-        alert("تم تصفير المواعيد وحالات الافتقاد، تفضل بإنشاء موعد جديد.");
+        let modal = bootstrap.Modal.getInstance(document.getElementById('deadlineRenewalModal'));
+        if (modal) modal.hide();
     }
 
     if (typeof enterDashboard === 'function') {
