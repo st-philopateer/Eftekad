@@ -3560,11 +3560,19 @@ window.onload = function() {
             </a>`;
 
             // 2. Osra channels
-            if (osras.length > 0) {
+            if (osras.length > 0 || true) {
                 html += `<div class="list-group-header mt-3 mb-1 text-muted small fw-bold"><i class="fas fa-sitemap me-1"></i> شات الأسر والخدمات</div>`;
                 html += `<input type="text" placeholder="بحث في الأسر..." class="form-control form-control-sm mb-1 chat-search-input" onkeyup="filterSelectOptions(this, 'osraChatSelect')">`;
                 html += `<select id="osraChatSelect" class="form-select auth-input mb-2 chat-select-dropdown" onchange="selectChatFromDropdown(this)">`;
                 html += `<option value="">اختر الأسرة/الخدمة...</option>`;
+                
+                let generalOsraChatId = `osra_عام_${curr.username}`;
+                let generalOsraSelected = (selectedChatId === generalOsraChatId || window.chatSelectedOsraName === 'عام') ? 'selected' : '';
+                if (generalOsraSelected) {
+                    window.chatSelectedOsraName = 'عام';
+                }
+                html += `<option value="${generalOsraChatId}" data-chat-name="شات أسرة: عام" ${generalOsraSelected}>أسرة: عام${getChatUnreadLabel(generalOsraChatId)}</option>`;
+
                 osras.forEach(o => {
                     let osraChatId = `osra_${o.name}_${curr.username}`;
                     let selected = (selectedChatId === osraChatId || window.chatSelectedOsraName === o.name) ? 'selected' : '';
@@ -3578,7 +3586,7 @@ window.onload = function() {
 
             // 3. Fasl channels
             let selectedOsraObj = osras.find(o => o.name === window.chatSelectedOsraName);
-            let hasSelectedOsra = !!selectedOsraObj;
+            let hasSelectedOsra = !!selectedOsraObj || window.chatSelectedOsraName === 'عام';
 
             html += `<div class="list-group-header mt-2 mb-1 text-muted small fw-bold"><i class="fas fa-school me-1"></i> شات الفصول</div>`;
             if (hasSelectedOsra) {
@@ -3589,7 +3597,11 @@ window.onload = function() {
                 html += `<option value="">يرجى اختيار الأسرة أولاً...</option>`;
             } else {
                 html += `<option value="">اختر الفصل...</option>`;
-                if (selectedOsraObj.fasls && selectedOsraObj.fasls.length > 0) {
+                if (window.chatSelectedOsraName === 'عام') {
+                    let faslChatId = `fasl_عام_عام_${curr.username}`;
+                    let selected = (selectedChatId === faslChatId) ? 'selected' : '';
+                    html += `<option value="${faslChatId}" data-chat-name="شات فصل: عام (عام)" ${selected}>فصل: عام (عام)${getChatUnreadLabel(faslChatId)}</option>`;
+                } else if (selectedOsraObj.fasls && selectedOsraObj.fasls.length > 0) {
                     selectedOsraObj.fasls.forEach(f => {
                         let faslChatId = `fasl_${selectedOsraObj.name}_${f}_${curr.username}`;
                         let selected = (selectedChatId === faslChatId) ? 'selected' : '';
@@ -5433,6 +5445,20 @@ window.onload = function() {
                     localStorage.setItem('servants', JSON.stringify(servants));
                     loadServantsTable();
                 }
+
+                // تحديث المخدومين (الوزنات) التابعين لهذه الأسرة المحذوفة
+                let waznat = JSON.parse(localStorage.getItem('waznat') || '[]');
+                let waznatUpdated = false;
+                waznat.forEach(w => {
+                    if (w.osra === osraName) {
+                        w.osra = 'عام';
+                        w.fasl = 'عام';
+                        waznatUpdated = true;
+                    }
+                });
+                if (waznatUpdated) {
+                    localStorage.setItem('waznat', JSON.stringify(waznat));
+                }
             }
         }
 
@@ -5542,6 +5568,19 @@ window.onload = function() {
                     if (updated) {
                         localStorage.setItem('servants', JSON.stringify(servants));
                         loadServantsTable();
+                    }
+
+                    // تحديث المخدومين (الوزنات) التابعين لهذا الفصل المحذوف
+                    let waznat = JSON.parse(localStorage.getItem('waznat') || '[]');
+                    let waznatUpdated = false;
+                    waznat.forEach(w => {
+                        if (w.osra === osraName && w.fasl === faslName) {
+                            w.fasl = 'عام';
+                            waznatUpdated = true;
+                        }
+                    });
+                    if (waznatUpdated) {
+                        localStorage.setItem('waznat', JSON.stringify(waznat));
                     }
                 }
             }
