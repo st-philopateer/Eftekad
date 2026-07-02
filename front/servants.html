@@ -254,16 +254,11 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-bold">الأسرة <span class="text-danger">*</span></label>
-                            <select id="addWaznaOsra" class="form-select auth-input py-2" onchange="populateAddWaznaFaslDropdown()">
+                            <select id="addWaznaOsra" class="form-select auth-input py-2" onchange="handleWaznaOsraChange()">
                                 <option value="">اختر الأسرة</option>
                             </select>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold">الفصل <span class="text-danger">*</span></label>
-                            <select id="addWaznaFasl" class="form-select auth-input py-2" onchange="validateServantWaznaForm()" disabled>
-                                <option value="">اختر الأسرة أولاً</option>
-                            </select>
-                        </div>
+                        <input type="hidden" id="addWaznaFasl" value="عام">
                         <div class="col-md-4">
                             <label class="form-label fw-bold">تاريخ الميلاد <small class="text-muted">(اختياري)</small></label>
                             <input type="date" id="addWaznaBirthDate" class="form-control auth-input py-2"
@@ -346,16 +341,11 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-bold text-secondary">الأسرة <span class="text-danger">*</span></label>
-                                    <select id="editWaznaOsra" class="form-select auth-input py-2" onchange="populateEditWaznaFaslDropdown()" required>
+                                    <select id="editWaznaOsra" class="form-select auth-input py-2" onchange="handleEditWaznaOsraChange()" required>
                                         <!-- Will be populated dynamically -->
                                     </select>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold text-secondary">الفصل <span class="text-danger">*</span></label>
-                                    <select id="editWaznaFasl" class="form-select auth-input py-2" required>
-                                        <!-- Will be populated dynamically -->
-                                    </select>
-                                </div>
+                                <input type="hidden" id="editWaznaFasl" value="عام">
                                 <div class="mb-3">
                                     <label class="form-label fw-bold text-secondary">تاريخ الميلاد <small class="text-muted">(اختياري)</small></label>
                                     <input type="date" id="editWaznaBirthDate" class="form-control auth-input py-2" onchange="calculateEditAge()">
@@ -653,54 +643,38 @@
             });
             if (osraNames.length === 1) {
                 select.value = osraNames[0];
-                populateAddWaznaFaslDropdown();
+                handleWaznaOsraChange();
             } else {
                 let faslSelect = document.getElementById('addWaznaFasl');
                 if (faslSelect) {
-                    faslSelect.innerHTML = '<option value="">اختر الأسرة أولاً</option>';
-                    faslSelect.disabled = true;
+                    faslSelect.value = 'عام';
                 }
             }
         }
 
-        function populateAddWaznaFaslDropdown() {
-            const osraSelect = document.getElementById('addWaznaOsra');
-            const faslSelect = document.getElementById('addWaznaFasl');
-            if (!osraSelect || !faslSelect) return;
-
-            const selectedOsra = osraSelect.value;
-            faslSelect.innerHTML = '<option value="">اختر الفصل</option>';
-
-            if (!selectedOsra) {
-                faslSelect.disabled = true;
-                validateServantWaznaForm();
-                return;
-            }
-
+        function getServantClassForOsra(osraName) {
             let currServant = JSON.parse(localStorage.getItem('currentServant'));
-            if (!currServant) return;
+            if (!currServant) return 'عام';
             let servants = JSON.parse(localStorage.getItem('servants') || '[]');
             let me = servants.find(s => s.username === currServant.username);
-            if (!me) return;
+            if (!me) return 'عام';
+            let osrasList = me.osra ? me.osra.split(',').map(o => o.trim()).filter(Boolean) : [];
+            let faslsList = me.fasl ? me.fasl.split(',').map(f => f.trim()).filter(Boolean) : [];
+            let idx = osrasList.indexOf(osraName);
+            return idx > -1 ? (faslsList[idx] || 'عام') : 'عام';
+        }
 
-            const priestServices = JSON.parse(localStorage.getItem('priestServices') || '[]');
-            const osraObj = priestServices.find(o => o.name === selectedOsra);
-
-            let myClasses = me.fasl ? me.fasl.split(',').map(f => f.trim()).filter(Boolean) : [];
-
-            if (osraObj && osraObj.fasls) {
-                let osraFasls = osraObj.fasls.filter(f => myClasses.includes(f));
-                osraFasls.forEach(f => {
-                    faslSelect.innerHTML += `<option value="${f}">${f}</option>`;
-                });
-            }
-
-            if (myClasses.includes('عام') || [...faslSelect.options].length === 1) {
-                faslSelect.innerHTML += '<option value="عام">عام</option>';
-            }
-
-            faslSelect.disabled = false;
+        function handleWaznaOsraChange() {
+            const osraVal = document.getElementById('addWaznaOsra').value;
+            const faslVal = getServantClassForOsra(osraVal);
+            document.getElementById('addWaznaFasl').value = faslVal;
             validateServantWaznaForm();
+        }
+
+        function handleEditWaznaOsraChange() {
+            const osraVal = document.getElementById('editWaznaOsra').value;
+            const faslVal = getServantClassForOsra(osraVal);
+            document.getElementById('editWaznaFasl').value = faslVal;
         }
 
         function applySavedServantTheme() {
@@ -1018,8 +992,7 @@
                 document.getElementById('addWaznaNotes').value = '';
                 document.getElementById('addWaznaOsra').value = '';
                 if (faslSelect) {
-                    faslSelect.innerHTML = '<option value="">اختر الأسرة أولاً</option>';
-                    faslSelect.disabled = true;
+                    faslSelect.value = 'عام';
                 }
                 validateServantWaznaForm();
 
@@ -1152,47 +1125,6 @@
             }
         }
 
-        function populateEditWaznaFaslDropdown(currentFasl = null) {
-            const osraSelect = document.getElementById('editWaznaOsra');
-            const faslSelect = document.getElementById('editWaznaFasl');
-            if (!osraSelect || !faslSelect) return;
-
-            const selectedOsra = osraSelect.value;
-            faslSelect.innerHTML = '<option value="">اختر الفصل</option>';
-
-            if (!selectedOsra) {
-                faslSelect.disabled = true;
-                return;
-            }
-
-            let currServant = JSON.parse(localStorage.getItem('currentServant'));
-            if (!currServant) return;
-            let servants = JSON.parse(localStorage.getItem('servants') || '[]');
-            let me = servants.find(s => s.username === currServant.username);
-            if (!me) return;
-
-            const priestServices = JSON.parse(localStorage.getItem('priestServices') || '[]');
-            const osraObj = priestServices.find(o => o.name === selectedOsra);
-
-            let myClasses = me.fasl ? me.fasl.split(',').map(f => f.trim()).filter(Boolean) : [];
-
-            if (osraObj && osraObj.fasls) {
-                let osraFasls = osraObj.fasls.filter(f => myClasses.includes(f));
-                osraFasls.forEach(f => {
-                    faslSelect.innerHTML += `<option value="${f}">${f}</option>`;
-                });
-            }
-
-            if (myClasses.includes('عام') || [...faslSelect.options].length === 1) {
-                faslSelect.innerHTML += '<option value="عام">عام</option>';
-            }
-
-            if (currentFasl) {
-                faslSelect.value = currentFasl;
-            }
-            faslSelect.disabled = false;
-        }
-
         function editWaznaByServant(id) {
             let waznat = JSON.parse(localStorage.getItem('waznat') || '[]');
             let w = waznat.find(item => item.id == id);
@@ -1209,7 +1141,7 @@
             document.getElementById('editWaznaNotes').value = w.notes || '';
             
             populateEditServantOsraDropdown(w.osra);
-            populateEditWaznaFaslDropdown(w.fasl);
+            document.getElementById('editWaznaFasl').value = w.fasl || 'عام';
             
             let modal = new bootstrap.Modal(document.getElementById('editWaznaModal'));
             modal.show();
@@ -1701,7 +1633,7 @@
             if (!me) return;
 
             let osraNames = me.osra ? me.osra.split(',').map(o => o.trim()).filter(Boolean) : [];
-            let faslName = me.fasl || 'عام';
+            let faslsList = me.fasl ? me.fasl.split(',').map(f => f.trim()).filter(Boolean) : [];
 
             let html = '';
 
@@ -1730,15 +1662,22 @@
             }
 
             // 3. Fasl channels
-            if (faslName && faslName !== 'عام') {
-                html += `<div class="list-group-header mt-3 mb-1 text-muted small fw-bold"><i class="fas fa-school me-1"></i> شات الفصل</div>`;
-                osraNames.forEach(osraName => {
-                    let faslChatId = `fasl_${osraName}_${faslName}_${me.priestUser}`;
-                    html += `<a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center chat-channel-item" data-chat-id="${faslChatId}" data-chat-name="شات فصل: ${faslName} (${osraName})">
-                        <span><i class="fas fa-chalkboard-teacher me-2 text-success"></i> شات فصل: ${faslName} (${osraName})</span>
+            let hasFaslChannels = false;
+            let faslChannelsHTML = '';
+            osraNames.forEach((osraName, idx) => {
+                let fName = faslsList[idx] || 'عام';
+                if (fName && fName !== 'عام') {
+                    hasFaslChannels = true;
+                    let faslChatId = `fasl_${osraName}_${fName}_${me.priestUser}`;
+                    faslChannelsHTML += `<a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center chat-channel-item" data-chat-id="${faslChatId}" data-chat-name="شات فصل: ${fName} (${osraName})">
+                        <span><i class="fas fa-chalkboard-teacher me-2 text-success"></i> شات فصل: ${fName} (${osraName})</span>
                         ${getBadgeHtml(faslChatId)}
                     </a>`;
-                });
+                }
+            });
+            if (hasFaslChannels) {
+                html += `<div class="list-group-header mt-3 mb-1 text-muted small fw-bold"><i class="fas fa-school me-1"></i> شات الفصل</div>`;
+                html += faslChannelsHTML;
             }
 
             // 4. Private chat with Father
@@ -3239,7 +3178,14 @@
             processPendingDeltas();
         });
 
-        let activeDeltaSyncs = {};
+        let activeDeltaSyncs = {
+            priests: 0,
+            servants: 0,
+            waznat: 0,
+            priestServices: 0,
+            deadlines: 0,
+            chat_messages: 0
+        };
         function customSetItem(key, value) {
             const keysToSync = ['priests', 'servants', 'waznat', 'priestServices', 'deadlines', 'chat_messages'];
             if (!keysToSync.includes(key) || !isServerMode()) {
