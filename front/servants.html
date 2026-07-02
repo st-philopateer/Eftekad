@@ -237,7 +237,11 @@
             <div id="addWaznaTab" class="tab-content">
                 <div class="card p-4 fade-in">
                     <h5 class="fw-bold mb-4 text-primary">إضافة مخدوم جديد</h5>
-                    <form class="row g-4" onsubmit="event.preventDefault(); if(!document.getElementById('addWaznaBtn').disabled) saveWazna();">
+                    <div id="noOsraWarning" class="alert alert-danger fw-bold text-center py-4 d-none">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-3 d-block"></i>
+                        لا يجوز إضافة وزنات إلا عند إضافتك لأسرة من خلال ابونا
+                    </div>
+                    <form id="addWaznaForm" class="row g-4" onsubmit="event.preventDefault(); if(!document.getElementById('addWaznaBtn').disabled) saveWazna();">
                         <div class="col-md-4">
                             <label class="form-label fw-bold">الاسم الكامل <span class="text-danger">*</span></label>
                             <input type="text" id="addWaznaName" class="form-control auth-input py-2"
@@ -342,7 +346,13 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-bold text-secondary">الأسرة <span class="text-danger">*</span></label>
-                                    <select id="editWaznaOsra" class="form-select auth-input py-2" required>
+                                    <select id="editWaznaOsra" class="form-select auth-input py-2" onchange="populateEditWaznaFaslDropdown()" required>
+                                        <!-- Will be populated dynamically -->
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">الفصل <span class="text-danger">*</span></label>
+                                    <select id="editWaznaFasl" class="form-select auth-input py-2" required>
                                         <!-- Will be populated dynamically -->
                                     </select>
                                 </div>
@@ -384,7 +394,7 @@
                         <div class="modal-body p-4 text-center">
                             <p class="text-muted small mb-3">قم بسحب الصورة وتكبيرها لتحديد الجزء المطلوب</p>
                             <div class="position-relative mx-auto mb-3 crop-preview-box">
-                                <canvas id="cropCanvas" width="280" height="280" class="crop-canvas-box"></canvas>
+                                <canvas id="cropCanvas" width="360" height="360" class="crop-canvas-box"></canvas>
                             </div>
                             <div class="mb-3 px-3">
                                 <label class="form-label small fw-bold text-muted d-block text-start">التكبير والتصغير</label>
@@ -551,6 +561,7 @@
             if (found) {
                 found.lastActive = new Date().toISOString();
                 localStorage.setItem('currentServant', JSON.stringify({ username: found.username }));
+                applySavedServantTheme();
                 
                 let servantIndex = servants.findIndex(s => s.username === found.username);
                 if (servantIndex > -1) {
@@ -620,6 +631,19 @@
             let servants = JSON.parse(localStorage.getItem('servants') || '[]');
             let me = servants.find(s => s.username === currServant.username);
             if (!me) return;
+
+            let warnEl = document.getElementById('noOsraWarning');
+            let formEl = document.getElementById('addWaznaForm');
+
+            if (!me.osra || me.osra === 'عام' || me.osra.trim() === '') {
+                if (warnEl) warnEl.classList.remove('d-none');
+                if (formEl) formEl.classList.add('d-none');
+                return;
+            } else {
+                if (warnEl) warnEl.classList.add('d-none');
+                if (formEl) formEl.classList.remove('d-none');
+            }
+
             let select = document.getElementById('addWaznaOsra');
             if (!select) return;
             select.innerHTML = '<option value="">اختر الأسرة</option>';
@@ -653,7 +677,10 @@
                 return;
             }
 
-            const me = JSON.parse(localStorage.getItem('currentServant'));
+            let currServant = JSON.parse(localStorage.getItem('currentServant'));
+            if (!currServant) return;
+            let servants = JSON.parse(localStorage.getItem('servants') || '[]');
+            let me = servants.find(s => s.username === currServant.username);
             if (!me) return;
 
             const priestServices = JSON.parse(localStorage.getItem('priestServices') || '[]');
@@ -676,24 +703,32 @@
             validateServantWaznaForm();
         }
 
-        const darkModeBtn = document.getElementById('darkModeBtn');
-        darkModeBtn.addEventListener('click', () => {
+        function applySavedServantTheme() {
+            const saved = localStorage.getItem('servantDashboardTheme') || 'light';
             const html = document.documentElement;
-            const currentTheme = html.getAttribute('data-bs-theme');
+            const darkModeBtn = document.getElementById('darkModeBtn');
+            if (!darkModeBtn) return;
             const icon = darkModeBtn.querySelector('i');
+            if (!icon) return;
 
-            if (currentTheme === 'dark') {
-                html.removeAttribute('data-bs-theme');
-                icon.classList.replace('fa-sun', 'fa-moon');
-                icon.classList.replace('text-warning', 'text-dark');
-                localStorage.setItem('servantDashboardTheme', 'light');
-            } else {
+            if (saved === 'dark') {
                 html.setAttribute('data-bs-theme', 'dark');
-                icon.classList.replace('fa-moon', 'fa-sun');
-                icon.classList.replace('text-dark', 'text-warning');
-                localStorage.setItem('servantDashboardTheme', 'dark');
+                icon.className = 'fas fa-sun text-warning';
+            } else {
+                html.removeAttribute('data-bs-theme');
+                icon.className = 'fas fa-moon text-dark';
             }
-        });
+        }
+
+        const darkModeBtn = document.getElementById('darkModeBtn');
+        if (darkModeBtn) {
+            darkModeBtn.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                localStorage.setItem('servantDashboardTheme', newTheme);
+                applySavedServantTheme();
+            });
+        }
 
         function resizeAndCompressImage(file, callback) {
             const reader = new FileReader();
@@ -789,7 +824,7 @@
             cropCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
             cropCtx.beginPath();
             cropCtx.rect(0, 0, cropCanvas.width, cropCanvas.height);
-            let radius = 110;
+            let radius = 150;
             let cx = cropCanvas.width / 2;
             let cy = cropCanvas.height / 2;
             cropCtx.arc(cx, cy, radius, 0, Math.PI * 2, true);
@@ -863,7 +898,7 @@
             outCanvas.height = 150;
             const outCtx = outCanvas.getContext('2d');
             
-            let radius = 110;
+            let radius = 150;
             let cx = cropCanvas.width / 2;
             let cy = cropCanvas.height / 2;
             let sx = cx - radius;
@@ -933,6 +968,14 @@
         }
 
         function saveWazna() {
+            let curr = JSON.parse(localStorage.getItem('currentServant'));
+            let servants = JSON.parse(localStorage.getItem('servants') || '[]');
+            let me = servants.find(s => s.username === curr.username);
+            if (!me || !me.osra || me.osra === 'عام' || me.osra.trim() === '') {
+                alert("لا يجوز إضافة وزنات إلا عند إضافتك لأسرة من خلال ابونا");
+                return;
+            }
+
             const n = document.getElementById('addWaznaName').value.trim();
             const p = document.getElementById('addWaznaPhone').value.trim();
             const birthDate = document.getElementById('addWaznaBirthDate').value;
@@ -1109,6 +1152,47 @@
             }
         }
 
+        function populateEditWaznaFaslDropdown(currentFasl = null) {
+            const osraSelect = document.getElementById('editWaznaOsra');
+            const faslSelect = document.getElementById('editWaznaFasl');
+            if (!osraSelect || !faslSelect) return;
+
+            const selectedOsra = osraSelect.value;
+            faslSelect.innerHTML = '<option value="">اختر الفصل</option>';
+
+            if (!selectedOsra) {
+                faslSelect.disabled = true;
+                return;
+            }
+
+            let currServant = JSON.parse(localStorage.getItem('currentServant'));
+            if (!currServant) return;
+            let servants = JSON.parse(localStorage.getItem('servants') || '[]');
+            let me = servants.find(s => s.username === currServant.username);
+            if (!me) return;
+
+            const priestServices = JSON.parse(localStorage.getItem('priestServices') || '[]');
+            const osraObj = priestServices.find(o => o.name === selectedOsra);
+
+            let myClasses = me.fasl ? me.fasl.split(',').map(f => f.trim()).filter(Boolean) : [];
+
+            if (osraObj && osraObj.fasls) {
+                let osraFasls = osraObj.fasls.filter(f => myClasses.includes(f));
+                osraFasls.forEach(f => {
+                    faslSelect.innerHTML += `<option value="${f}">${f}</option>`;
+                });
+            }
+
+            if (myClasses.includes('عام') || [...faslSelect.options].length === 1) {
+                faslSelect.innerHTML += '<option value="عام">عام</option>';
+            }
+
+            if (currentFasl) {
+                faslSelect.value = currentFasl;
+            }
+            faslSelect.disabled = false;
+        }
+
         function editWaznaByServant(id) {
             let waznat = JSON.parse(localStorage.getItem('waznat') || '[]');
             let w = waznat.find(item => item.id == id);
@@ -1125,6 +1209,7 @@
             document.getElementById('editWaznaNotes').value = w.notes || '';
             
             populateEditServantOsraDropdown(w.osra);
+            populateEditWaznaFaslDropdown(w.fasl);
             
             let modal = new bootstrap.Modal(document.getElementById('editWaznaModal'));
             modal.show();
@@ -1144,8 +1229,9 @@
             let address = document.getElementById('editWaznaAddress').value.trim();
             let notes = document.getElementById('editWaznaNotes').value.trim();
             let osra = document.getElementById('editWaznaOsra').value;
+            let fasl = document.getElementById('editWaznaFasl').value || 'عام';
 
-            if (!name || !phone || !osra) {
+            if (!name || !phone || !osra || !fasl) {
                 alert("الرجاء ملء الحقول المطلوبة!");
                 return;
             }
@@ -1160,6 +1246,7 @@
                 waznat[index].address = address;
                 waznat[index].notes = notes;
                 waznat[index].osra = osra;
+                waznat[index].fasl = fasl;
 
                 localStorage.setItem('waznat', JSON.stringify(waznat));
 
@@ -1839,7 +1926,7 @@
                     <div id="msg-container-${msg.id}" class="d-flex mb-3 justify-content-start align-items-end" dir="ltr" style="width: 100%;">
                         <img src="${pic}" width="35" height="35" class="rounded-circle border me-2" style="object-fit: cover; min-width: 35px; min-height: 35px;">
                         <div class="d-flex flex-row align-items-center msg-hover-container" style="max-width: 85%;">
-                            <div class="bg-white text-dark p-2 rounded shadow-sm border" style="border-bottom-left-radius: 0; text-align: right; direction: rtl; word-break: break-word;">
+                            <div class="received-chat-bubble bg-white text-dark p-2 rounded shadow-sm border" style="border-bottom-left-radius: 0; text-align: right; direction: rtl; word-break: break-word;">
                                 <span class="d-block text-primary mb-1" style="font-size: 0.8rem; font-weight: bold;">${senderDisplayName}</span>
                                 ${replyToHtml}
                                 ${messageBodyHtml}
@@ -3179,6 +3266,7 @@
         localStorage.setItem = customSetItem;
 
         document.addEventListener("DOMContentLoaded", async () => {
+            applySavedServantTheme();
             // محاولة رفع أي بيانات معلقة أوفلاين تم حفظها سابقاً بمجرد تحميل الصفحة
             processPendingDeltas();
             if ('serviceWorker' in navigator && isServerMode()) {
@@ -3236,6 +3324,7 @@
                 // Register real-time sync immediately
                 // Pusher will handle realtime updates; fallback polling every 60 seconds if needed
                 setInterval(syncWithServerRealtime, 20000);
+                setInterval(checkDeadlines, 10000);
 
                 // Run background initial sync asynchronously
                 syncFromServer().then(() => {

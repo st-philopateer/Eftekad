@@ -903,3 +903,13 @@ html {
     }
 }
 
+[data-bs-theme="dark"] .received-chat-bubble {
+    background-color: #1e293b !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: #f1f5f9 !important;
+}
+
+[data-bs-theme="dark"] .received-chat-bubble .text-muted {
+    color: #cbd5e1 !important;
+}
+
