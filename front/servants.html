@@ -258,6 +258,10 @@
                                 <option value="">اختر الأسرة</option>
                             </select>
                         </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">الفصل <span class="text-danger">*</span></label>
+                            <input type="text" id="addWaznaFaslDisplay" class="form-control auth-input py-2" readonly placeholder="يُحدد تلقائياً">
+                        </div>
                         <input type="hidden" id="addWaznaFasl" value="عام">
                         <div class="col-md-4">
                             <label class="form-label fw-bold">تاريخ الميلاد <small class="text-muted">(اختياري)</small></label>
@@ -344,6 +348,10 @@
                                     <select id="editWaznaOsra" class="form-select auth-input py-2" onchange="handleEditWaznaOsraChange()" required>
                                         <!-- Will be populated dynamically -->
                                     </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-secondary">الفصل <span class="text-danger">*</span></label>
+                                    <input type="text" id="editWaznaFaslDisplay" class="form-control auth-input py-2 text-start" readonly>
                                 </div>
                                 <input type="hidden" id="editWaznaFasl" value="عام">
                                 <div class="mb-3">
@@ -668,6 +676,8 @@
             const osraVal = document.getElementById('addWaznaOsra').value;
             const faslVal = getServantClassForOsra(osraVal);
             document.getElementById('addWaznaFasl').value = faslVal;
+            const disp = document.getElementById('addWaznaFaslDisplay');
+            if (disp) disp.value = faslVal;
             validateServantWaznaForm();
         }
 
@@ -675,6 +685,8 @@
             const osraVal = document.getElementById('editWaznaOsra').value;
             const faslVal = getServantClassForOsra(osraVal);
             document.getElementById('editWaznaFasl').value = faslVal;
+            const disp = document.getElementById('editWaznaFaslDisplay');
+            if (disp) disp.value = faslVal;
         }
 
         function applySavedServantTheme() {
@@ -1142,6 +1154,7 @@
             
             populateEditServantOsraDropdown(w.osra);
             document.getElementById('editWaznaFasl').value = w.fasl || 'عام';
+            document.getElementById('editWaznaFaslDisplay').value = w.fasl || 'عام';
             
             let modal = new bootstrap.Modal(document.getElementById('editWaznaModal'));
             modal.show();

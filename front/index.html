@@ -5898,13 +5898,39 @@ window.onload = function() {
         }
 
         function populateAddServantOsras() {
-            let select = document.getElementById('createServantOsraSelect');
-            if (!select) return;
+            let list = document.getElementById('createServantOsraList');
+            if (!list) return;
             let osras = getPriestServices();
-            select.innerHTML = '<option value="">اختر الأسرة</option>';
+            list.innerHTML = '';
+            if (osras.length === 0) {
+                list.innerHTML = '<li class="text-muted text-center py-2">لا توجد أسر مضافة</li>';
+                return;
+            }
             osras.forEach(o => {
-                select.innerHTML += `<option value="${o.name}">${o.name}</option>`;
+                list.innerHTML += `
+                    <li class="mb-2 mx-2">
+                        <div class="form-check">
+                            <input class="form-check-input create-servant-osra-check" type="checkbox" value="${o.name}" id="chkAddOsra_${o.name}" onchange="updateCreateServantOsraLabel()">
+                            <label class="form-check-label fw-bold text-dark" for="chkAddOsra_${o.name}">
+                                ${o.name}
+                            </label>
+                        </div>
+                    </li>
+                `;
             });
+            updateCreateServantOsraLabel();
+        }
+
+        function updateCreateServantOsraLabel() {
+            let chks = document.querySelectorAll('.create-servant-osra-check');
+            let selected = [];
+            chks.forEach(chk => {
+                if (chk.checked) selected.push(chk.value);
+            });
+            let btn = document.getElementById('createServantOsraDropdown');
+            if (btn) {
+                btn.innerText = selected.length > 0 ? selected.join(', ') : 'اختر الأسر...';
+            }
         }
 
         function openEditServantModal(username) {
