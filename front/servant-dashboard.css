@@ -530,8 +530,8 @@ html {
 .crop-preview-box {
     position: relative !important;
     margin: 0 auto 1.5rem !important;
-    width: 360px !important;
-    height: 360px !important;
+    width: 400px !important;
+    height: 400px !important;
     background: #000 !important;
     overflow: hidden !important;
     border-radius: 8px !important;

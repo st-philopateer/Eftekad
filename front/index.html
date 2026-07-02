@@ -453,14 +453,13 @@
                                     <th>الاسم (حساب)</th>
                                     <th>الأسرة</th>
                                     <th>الفصل</th>
-                                    <th>كلمة المرور</th>
                                     <th>الحالة</th>
                                     <th>الإجراءات</th>
                                 </tr>
                             </thead>
                             <tbody id="servantsTableBody">
                                 <tr>
-                                    <td colspan="5" class="text-muted">لا توجد بيانات</td>
+                                    <td colspan="7" class="text-muted">لا توجد بيانات</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -590,8 +589,8 @@
                                     <input type="text" id="editServantWhatsapp" class="form-control auth-input py-2 text-start" placeholder="01xxxxxxxxx">
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold text-secondary">تغيير كلمة المرور <small class="text-muted">(اتركها فارغة لعدم التغيير)</small></label>
-                                    <input type="password" id="editServantPassword" class="form-control auth-input py-2 text-start" placeholder="كلمة المرور الجديدة">
+                                    <label class="form-label fw-bold text-secondary">كلمة المرور</label>
+                                    <input type="password" id="editServantPassword" class="form-control auth-input py-2 text-start" placeholder="أدخل كلمة المرور">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold text-secondary">اسم المستخدم (لا يمكن تعديله)</label>
@@ -670,8 +669,8 @@
                         </div>
                         <div class="modal-body p-4 text-center">
                             <p class="text-muted small mb-3">قم بسحب الصورة وتكبيرها لتحديد الجزء المطلوب</p>
-                            <div class="position-relative mx-auto mb-3" style="width: 360px; height: 360px; background: #000; overflow: hidden; border-radius: 8px;">
-                                <canvas id="cropCanvas" width="360" height="360" style="cursor: move; position: absolute; top:0; left:0;"></canvas>
+                            <div class="position-relative mx-auto mb-3" style="width: 400px; height: 400px; background: #000; overflow: hidden; border-radius: 8px;">
+                                <canvas id="cropCanvas" width="400" height="400" style="cursor: move; position: absolute; top:0; left:0;"></canvas>
                             </div>
                             <div class="mb-3 px-3">
                                 <label class="form-label small fw-bold text-muted d-block text-start">التكبير والتصغير</label>
@@ -1526,7 +1525,7 @@
             cropCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
             cropCtx.beginPath();
             cropCtx.rect(0, 0, cropCanvas.width, cropCanvas.height);
-            let radius = 150;
+            let radius = 170;
             let cx = cropCanvas.width / 2;
             let cy = cropCanvas.height / 2;
             cropCtx.arc(cx, cy, radius, 0, Math.PI * 2, true);
@@ -1600,7 +1599,7 @@
             outCanvas.height = 150;
             const outCtx = outCanvas.getContext('2d');
             
-            let radius = 150;
+            let radius = 170;
             let cx = cropCanvas.width / 2;
             let cy = cropCanvas.height / 2;
             let sx = cx - radius;
@@ -2001,7 +2000,7 @@
     }
 
     if (filteredServants.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-muted py-3">لم يتم العثور على أي خدام</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-muted py-3">لم يتم العثور على أي خدام</td></tr>';
     } else {
         filteredServants.forEach((s, index) => {
             // تم دمج السطرين وحساب مدة الـ 3 دقائق مباشرة
@@ -2013,11 +2012,9 @@
                 <td class="text-muted">${s.username}</td>
                 <td>${s.osra || 'عام'}</td>
                 <td>${s.fasl || 'عام'}</td>
-                <td dir="ltr" class="text-primary fw-bold">${s.password}</td>
                 <td>${isOnline ? `<span class="badge bg-success">نشط</span>` : `<span class="badge bg-secondary">غير نشط</span>`}</td>
                 <td>
-                    <button class="btn btn-sm btn-outline-success" onclick="openEditServantModal('${s.username}')"><i class="fas fa-layer-group"></i> تعديل وبيانات</button>
-                    <button class="btn btn-sm btn-outline-primary" onclick="editServantPassword('${s.username}')"><i class="fas fa-edit"></i> المرور</button>
+                    <button class="btn btn-sm btn-outline-success" onclick="openEditServantModal('${s.username}')"><i class="fas fa-edit"></i> تعديل</button>
                     ${s.whatsapp ? `<button class="btn btn-sm btn-outline-success" onclick="openWhatsAppChat('${s.whatsapp}', buildServantWhatsAppMessage('${s.username}', '${s.password}'))"><i class="fab fa-whatsapp"></i></button>` : ''}
                     <button class="btn btn-sm btn-outline-danger" onclick="removeServantFromGroup('${s.username}')"><i class="fas fa-user-minus"></i> إزالة</button>
                 </td>
@@ -5352,19 +5349,46 @@ window.onload = function() {
                 osras = osras.filter(o => o.name !== osraName);
                 savePriestServices(osras);
 
-                // تحديث الخدام التابعين لهذه الأسرة لتصبح خدمتهم "عام"
+                // تحديث الخدام التابعين لهذه الأسرة
                 let servants = JSON.parse(localStorage.getItem('servants') || '[]');
-                let updated = false;
+                let servantsUpdated = false;
                 servants.forEach(s => {
-                    if (s.osra === osraName) {
-                        s.osra = 'عام';
-                        s.fasl = 'عام';
-                        updated = true;
+                    if (s.osra) {
+                        let osrasList = s.osra.split(',').map(x => x.trim()).filter(Boolean);
+                        let faslsList = s.fasl ? s.fasl.split(',').map(x => x.trim()).filter(Boolean) : [];
+                        
+                        let idx = osrasList.indexOf(osraName);
+                        if (idx > -1) {
+                            osrasList.splice(idx, 1);
+                            if (faslsList.length > idx) {
+                                faslsList.splice(idx, 1);
+                            }
+                            s.osra = osrasList.length > 0 ? osrasList.join(', ') : 'عام';
+                            s.fasl = faslsList.length > 0 ? faslsList.join(', ') : 'عام';
+                            servantsUpdated = true;
+                        }
                     }
                 });
-                if (updated) {
+                if (servantsUpdated) {
                     localStorage.setItem('servants', JSON.stringify(servants));
                     loadServantsTable();
+                }
+
+                // تحديث المخدومين التابعين لهذه الأسرة
+                let waznat = JSON.parse(localStorage.getItem('waznat') || '[]');
+                let waznatUpdated = false;
+                waznat.forEach(w => {
+                    if (w.osra === osraName) {
+                        w.osra = 'عام';
+                        w.fasl = 'عام';
+                        waznatUpdated = true;
+                    }
+                });
+                if (waznatUpdated) {
+                    localStorage.setItem('waznat', JSON.stringify(waznat));
+                    if (typeof loadAllWaznat === 'function') {
+                        loadAllWaznat();
+                    }
                 }
             }
         }
@@ -5420,16 +5444,36 @@ window.onload = function() {
 
             if (newName !== osraName) {
                 let servants = JSON.parse(localStorage.getItem('servants') || '[]');
+                let servantsUpdated = false;
                 servants.forEach(s => {
-                    if (s.osra === osraName) s.osra = newName;
+                    if (s.osra) {
+                        let osrasList = s.osra.split(',').map(x => x.trim()).filter(Boolean);
+                        let idx = osrasList.indexOf(osraName);
+                        if (idx > -1) {
+                            osrasList[idx] = newName;
+                            s.osra = osrasList.join(', ');
+                            servantsUpdated = true;
+                        }
+                    }
                 });
-                localStorage.setItem('servants', JSON.stringify(servants));
+                if (servantsUpdated) {
+                    localStorage.setItem('servants', JSON.stringify(servants));
+                }
 
                 let waznat = JSON.parse(localStorage.getItem('waznat') || '[]');
+                let waznatUpdated = false;
                 waznat.forEach(w => {
-                    if (w.osra === osraName) w.osra = newName;
+                    if (w.osra === osraName) {
+                        w.osra = newName;
+                        waznatUpdated = true;
+                    }
                 });
-                localStorage.setItem('waznat', JSON.stringify(waznat));
+                if (waznatUpdated) {
+                    localStorage.setItem('waznat', JSON.stringify(waznat));
+                    if (typeof loadAllWaznat === 'function') {
+                        loadAllWaznat();
+                    }
+                }
             }
 
             savePriestServices(osras);
@@ -5682,7 +5726,7 @@ window.onload = function() {
             document.getElementById('editServantUsernameDisplay').value = s.username;
             document.getElementById('editServantFullName').value = s.fullName || '';
             document.getElementById('editServantWhatsapp').value = s.whatsapp || '';
-            document.getElementById('editServantPassword').value = ''; // clear password input
+            document.getElementById('editServantPassword').value = s.password || '';
 
             // Populate the assignments list
             let osras = getPriestServices(); // all Priest Families
@@ -5742,10 +5786,14 @@ window.onload = function() {
             let username = document.getElementById('editServantUsername').value;
             let fullName = document.getElementById('editServantFullName').value.trim();
             let whatsapp = document.getElementById('editServantWhatsapp').value.trim();
-            let newPass = document.getElementById('editServantPassword').value;
+            let newPass = document.getElementById('editServantPassword').value.trim();
 
             if (!fullName) {
                 alert("الرجاء إدخال الاسم الكامل!");
+                return;
+            }
+            if (!newPass) {
+                alert("الرجاء إدخال كلمة المرور!");
                 return;
             }
 
@@ -5774,9 +5822,7 @@ window.onload = function() {
                 servants[index].whatsapp = whatsapp;
                 servants[index].osra = osraStr;
                 servants[index].fasl = faslStr;
-                if (newPass) {
-                    servants[index].password = newPass;
-                }
+                servants[index].password = newPass;
 
                 localStorage.setItem('servants', JSON.stringify(servants));
                 loadServantsTable();
