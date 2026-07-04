@@ -5191,8 +5191,8 @@ window.onload = function() {
                     let deadlineTime = new Date(applicable.datetime);
                     waznat.forEach(w => {
                         if (w.servantUser === servant.username) {
-                            let isLate = w.lastCallResult === 'رد' && w.timestamp && (new Date(w.timestamp) >= deadlineTime);
-                            let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'لم يفتقد';
+                            let isLate = (w.lastCallResult === 'رد' || w.lastCallResult === 'لم يرد') && w.timestamp && (new Date(w.timestamp) >= deadlineTime);
+                            let isNotCompleted = w.lastCallResult !== 'رد' && w.lastCallResult !== 'لم يرد' && w.lastCallResult !== 'لم يفتقد';
                             
                             if (isLate || isNotCompleted) {
                                 w.lastCallResult = 'لم يفتقد';
@@ -5224,8 +5224,8 @@ window.onload = function() {
             let myWaznat = allWaznat.filter(w => myServantUsernames.includes(w.servantUser));
 
             // الكود الجديد لحساب حالة لم يفتقد ضمن الإحصائيات
-            let completed = myWaznat.filter(w => w.lastCallResult === 'رد').length;
-            let uncompleted = myWaznat.filter(w => w.lastCallResult === 'لم يرد' || w.lastCallResult === 'إلغاء').length;
+            let completed = myWaznat.filter(w => w.lastCallResult === 'رد' || w.lastCallResult === 'لم يرد').length;
+            let uncompleted = myWaznat.filter(w => w.lastCallResult === 'لم يتم الاتصال بعد' || w.lastCallResult === 'إلغاء').length;
             let missed = myWaznat.filter(w => w.lastCallResult === 'لم يفتقد').length; // إضافة هذا السطر
             let totalCalls = completed + uncompleted + missed; // تحديث الإجمالي
 
