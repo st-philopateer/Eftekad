@@ -1,0 +1,20 @@
+{
+  "id": "/priest-app",
+  "name": "نظام الافتقاد",
+  "short_name": "نظام الافتقاد",
+  "description": "نظام إدارة الافتقاد ",
+  "start_url": "/priest",
+  "scope": "/priest",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#4f46e5",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "logo-removebg-preview.png",
+      "sizes": "500x500",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

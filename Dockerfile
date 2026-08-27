@@ -18,4 +18,4 @@ ENV PORT=7860
 EXPOSE 7860
 
 # Start the Express server
-CMD ["node", "api/server.js"]
+CMD ["node", "back/server.js"]

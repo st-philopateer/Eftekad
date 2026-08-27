@@ -1,0 +1,795 @@
+
+/* CUSTOM DESIGN FONTS LOADED FROM /fonts/ */
+@font-face {
+  font-family: 'CoconNextArabic';
+  src: url('/fonts/cocon-next-arabic.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DG3asomy';
+  src: url('/fonts/DG-3asomy-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RHZak';
+  src: url('/fonts/RH-Zak-Reg.otf.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vexa';
+  src: url('/fonts/VEXA-.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DecoTypeThuluth';
+  src: url('/fonts/DecoType Thuluth.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* APPLY CUSTOM FONTS TO TEXT ONLY - PRESERVE FONT AWESOME ICONS */
+body, html, input, select, textarea, button, table, td, th, h1, h2, h3, h4, h5, h6, label, p, a, code {
+  font-family: 'CoconNextArabic', 'DG3asomy', 'RHZak', 'Vexa', 'Cairo', sans-serif !important;
+}
+
+span:not(.fa):not([class*="fa-"]), div:not(.fa):not([class*="fa-"]) {
+  font-family: 'CoconNextArabic', 'DG3asomy', 'RHZak', 'Vexa', 'Cairo', sans-serif;
+}
+
+/* PROTECT FONT AWESOME ICONS */
+i, i.fas, i.far, i.fab, i.fa, .fa, .fas, .far, .fab, [class^="fa-"], [class*=" fa-"] {
+  font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome" !important;
+}
+
+
+@font-face {
+  font-family: 'CoconNextArabic';
+  src: url('/fonts/cocon-next-arabic.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DG3asomy';
+  src: url('/fonts/DG-3asomy-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'RHZak';
+  src: url('/fonts/RH-Zak-Reg.otf.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vexa';
+  src: url('/fonts/VEXA-.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DecoTypeThuluth';
+  src: url('/fonts/DecoType Thuluth.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+:root {
+    --primary-color: #4f46e5;
+    --secondary-color: #0f172a;
+    --accent-color: #d4af37;
+    --bg-light: #f1f5f9;
+    --card-bg: #ffffff;
+    --text-color: #1e293b;
+    --sidebar-width: 250px;
+    --transition-speed: 0.3s;
+    --sidebar-bg: #ffffff;
+    --sidebar-text: #1e293b;
+    --sidebar-header-border: rgba(0, 0, 0, 0.05);
+    --sidebar-link-text: #475569;
+    --sidebar-link-active-text: #ffffff;
+}
+
+[data-bs-theme="dark"] {
+    --primary-color: #6366f1;
+    --secondary-color: #0f172a;
+    --bg-light: #111827;
+    --card-bg: #1e293b;
+    --text-color: #f8fafc;
+    --sidebar-bg: #0f172a;
+    --sidebar-text: #ffffff;
+    --sidebar-header-border: rgba(255, 255, 255, 0.05);
+    --sidebar-link-text: #94a3b8;
+    --sidebar-link-active-text: #ffffff;
+}
+
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.text-accent {
+    color: var(--accent-color) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #fff;
+    border-radius: 8px;
+}
+
+.btn-primary:hover {
+    background-color: #4338ca;
+    border-color: #4338ca;
+    color: #fff;
+}
+
+.btn-accent {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #fff;
+    border-radius: 8px;
+}
+
+.btn-accent:hover {
+    background-color: #bfa033;
+    color: #fff;
+}
+
+body {
+    font-family: 'Cairo', sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-color);
+    overflow-x: hidden;
+    transition: all var(--transition-speed);
+    margin: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* Layout */
+.wrapper {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
+    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Sidebar */
+/* #sidebar width handled by index.css */
+
+/* #sidebar.collapsed handled by index.css */
+
+#sidebar .sidebar-header {
+    padding: 30px 20px;
+    text-align: center;
+    border-bottom: 1px solid var(--sidebar-header-border);
+}
+
+#sidebar ul.components {
+    padding: 20px 15px;
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-bottom: 0;
+}
+
+#sidebar ul li a {
+    padding: 12px 20px;
+    font-size: 1.05em;
+    display: flex;
+    align-items: center;
+    color: var(--sidebar-link-text);
+    text-decoration: none;
+    transition: all var(--transition-speed);
+    border-radius: 8px;
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+
+#sidebar ul li a:hover,
+#sidebar ul li.active>a {
+    color: var(--sidebar-link-active-text);
+    background: var(--primary-color);
+}
+
+#sidebar ul li a i {
+    margin-left: 15px;
+    width: 20px;
+    text-align: center;
+}
+
+/* Fixed sidebar footer for logout */
+.sidebar-footer {
+    padding: 15px;
+    border-top: 1px solid var(--sidebar-header-border);
+    background: var(--sidebar-bg);
+}
+
+.sidebar-footer a {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    font-size: 1.05em;
+    color: #dc3545;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all var(--transition-speed);
+    cursor: pointer;
+}
+
+.sidebar-footer a:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.sidebar-footer a i {
+    margin-left: 15px;
+    width: 20px;
+    text-align: center;
+}
+
+/* Mobile Sidebar off-canvas styling */
+.sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1030;
+    display: none;
+    opacity: 0;
+    transition: opacity var(--transition-speed) ease-in-out;
+}
+
+.sidebar-backdrop.show {
+    display: block;
+    opacity: 1;
+}
+
+/* Content */
+#content {
+    width: 100%;
+    padding: 20px 30px 0;
+    transition: all var(--transition-speed) ease-in-out;
+    background-color: var(--bg-light);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#contentMain {
+    flex: 1 0 auto;
+}
+
+[data-bs-theme="dark"] body,
+[data-bs-theme="dark"] #content {
+    background-color: var(--bg-light);
+    color: var(--text-color);
+}
+
+[data-bs-theme="dark"] .table-light {
+    --bs-table-bg: #334155;
+    --bs-table-color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .table-hover tbody tr:hover {
+    --bs-table-hover-bg: rgba(99, 102, 241, 0.12);
+}
+
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+    background-color: #1e293b;
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus {
+    background-color: #1e293b;
+    border-color: var(--primary-color);
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .btn-light {
+    background-color: #334155;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .text-muted {
+    color: #94a3b8 !important;
+}
+
+[data-bs-theme="dark"] #chatMessages {
+    background-color: #0f172a !important;
+}
+
+[data-bs-theme="dark"] #chatReplyBox {
+    background-color: #1e293b !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-bs-theme="dark"] .list-group-item {
+    background-color: var(--card-bg);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: var(--text-color);
+}
+
+[data-bs-theme="dark"] .dropdown-menu {
+    background-color: #1e293b;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="dark"] .dropdown-item {
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .dropdown-item:hover {
+    background-color: rgba(99, 102, 241, 0.2);
+}
+
+.profile-upload-btn {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--secondary-color);
+    background: var(--primary-color);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transform: translate(-15%, 15%);
+}
+
+.profile-remove-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--secondary-color);
+    background: #dc3545;
+    color: #fff;
+    font-size: 0.55rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transform: translate(15%, -15%);
+    z-index: 2;
+}
+
+.profile-remove-btn:hover {
+    background: #bb2d3b;
+}
+
+.notifications-dropdown {
+    min-width: 300px;
+    max-height: 360px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    white-space: normal;
+    font-size: 0.85rem;
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+[data-bs-theme="dark"] .notification-item {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.scope-select-hidden {
+    display: none !important;
+}
+
+/* Cards */
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+[data-bs-theme="dark"] .card {
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+/* Navbar */
+.top-navbar {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 15px 25px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+[data-bs-theme="dark"] .top-navbar {
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.fade-in {
+    animation: fadeIn 0.4s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+    animation: fadeIn 0.4s ease-in;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+[data-bs-theme="dark"] ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+[data-bs-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: #475569;
+}
+
+[data-bs-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+#content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+@media (max-width: 768px), (max-height: 576px) {
+    /* #sidebar width handled by index.css */
+.modal-content-rounded {
+    border-radius: 15px !important;
+}
+.modal-content-rounded-bg {
+    border-radius: 15px !important;
+    background: var(--card-bg) !important;
+}
+.osra-checkboxes-container {
+    max-height: 120px !important;
+    overflow-y: auto !important;
+}
+.crop-preview-box {
+    position: relative !important;
+    margin: 0 auto 1.5rem !important;
+    width: 400px !important;
+    height: 400px !important;
+    background: #000 !important;
+    overflow: hidden !important;
+    border-radius: 8px !important;
+}
+.crop-canvas-box {
+    cursor: move !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+}
+.stat-percentage-wrapper {
+    height: 150px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+.stat-percentage-txt {
+    font-size: 4rem !important;
+}
+.chart-wrapper-250 {
+    height: 250px !important;
+    display: flex !important;
+    justify-content: center !important;
+}
+.chat-card-container {
+    min-height: 500px !important;
+}
+.chat-channels-list-scroll {
+    max-height: 400px !important;
+    overflow-y: auto !important;
+}
+.chat-messages-box-scroll {
+    overflow-y: auto !important;
+    max-height: 350px !important;
+    min-height: 300px !important;
+}
+.avatar-display-settings {
+    width: 150px !important;
+    height: 150px !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+}
+.input-group-btn-pass-settings {
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #94a3b8 !important;
+    width: 45px !important;
+}
+
+@media (max-width: 768px) {
+    .table th, .table td {
+        font-size: 0.82rem !important;
+        padding: 8px 4px !important;
+    }
+    .card {
+        padding: 15px !important;
+    }
+    .top-navbar {
+        padding: 10px 15px !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        gap: 10px !important;
+        text-align: right !important;
+    }
+    .top-navbar h4 {
+        font-size: 1.15rem !important;
+    }
+    #content {
+        padding: 10px 10px 0 !important;
+    }
+    .chat-card-container {
+        min-height: auto !important;
+    }
+    .chat-channels-list-scroll {
+        max-height: 180px !important;
+    }
+    .chat-messages-box-scroll {
+        min-height: 200px !important;
+        max-height: 250px !important;
+    }
+}
+
+@media (max-height: 520px) {
+    #sidebar .sidebar-header {
+        padding: 10px 15px !important;
+    }
+    .avatar-display-sidebar {
+        width: 50px !important;
+        height: 50px !important;
+    }
+    .priest-name-sidebar {
+        font-size: 1rem !important;
+        margin-top: 5px !important;
+        margin-bottom: 2px !important;
+    }
+    .church-name-sidebar {
+        font-size: 0.8rem !important;
+        margin-bottom: 5px !important;
+    }
+    #sidebar ul.components {
+        padding: 5px 10px !important;
+    }
+    #sidebar ul li a {
+        padding: 8px 15px !important;
+        font-size: 0.95em !important;
+        margin-bottom: 2px !important;
+    }
+    .sidebar-footer {
+        padding: 8px 10px !important;
+    }
+    .sidebar-footer a {
+        padding: 8px 15px !important;
+        font-size: 0.95em !important;
+    }
+}
+
+/* Dark Theme Header Text Overrides */
+[data-bs-theme="dark"] #topBarChurchName,
+[data-bs-theme="dark"] h1.text-primary,
+[data-bs-theme="dark"] h4.text-primary,
+[data-bs-theme="dark"] h5.text-primary,
+[data-bs-theme="dark"] h6.text-primary {
+    color: #eee !important;
+}
+
+/* Dark Mode Select Options & Form Inputs */
+[data-bs-theme="dark"] select option,
+[data-bs-theme="dark"] .form-select option {
+    background-color: #1e293b !important;
+    color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(0.9);
+}
+
+
+/* Enhanced Mobile Responsiveness for Priest Dashboard */
+@media (max-width: 576px) {
+    /* Sidebar adjustments */
+    /* #sidebar width handled by index.css */
+    
+    .notifications-dropdown {
+        min-width: 250px !important;
+        max-width: calc(100vw - 20px) !important;
+    }
+    
+    /* Chat messages */
+    .chat-message-highlight {
+        animation: highlightFlash 1s ease-out;
+    }
+    
+    /* Modal adjustments */
+    .modal-dialog {
+        margin: 10px auto;
+    }
+    
+    /* Footer */
+    .dashboard-footer {
+        margin-left: -12px;
+        margin-right: -12px;
+        width: calc(100% + 24px);
+    }
+    
+    .footer-logo {
+        left: 8px;
+        width: 50px;
+        height: 50px;
+        top: -20px;
+    }
+    
+    .footer-text {
+        font-size: 0.75rem;
+        width: calc(100% - 120px);
+    }
+}
+
+@media (max-width: 480px) {
+    /* Extra small screens */
+    /* #sidebar width handled by index.css */
+}
+
+@media (max-height: 600px) {
+    /* Short screens */
+    #sidebar .sidebar-header {
+        padding: 15px 12px;
+    }
+    
+    #sidebar ul.components {
+        padding: 10px 8px;
+    }
+    
+    #sidebar ul li a {
+        padding: 8px 12px;
+        font-size: 0.9em;
+        margin-bottom: 3px;
+    }
+    
+    .top-navbar {
+        padding: 10px 12px;
+        margin-bottom: 10px;
+    }
+    
+    #content {
+        padding: 10px 10px 0 !important;
+    }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+    #sidebar .sidebar-header {
+        padding: 10px 12px;
+    }
+    
+    .avatar-display-sidebar {
+        width: 50px !important;
+        height: 50px !important;
+    }
+    
+    .priest-name-sidebar {
+        font-size: 0.9rem !important;
+        margin-top: 5px !important;
+    }
+    
+    .church-name-sidebar {
+        font-size: 0.75rem !important;
+    }
+    
+    #sidebar ul li a {
+        padding: 6px 12px;
+        font-size: 0.85em;
+        margin-bottom: 2px;
+    }
+    
+    .top-navbar {
+        padding: 8px 10px;
+        margin-bottom: 8px;
+    }
+    
+    #content {
+        padding: 8px 8px 0 !important;
+    }
+}
+
+[data-bs-theme="dark"] .received-chat-bubble {
+    background-color: #1e293b !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: #f1f5f9 !important;
+}
+
+[data-bs-theme="dark"] .received-chat-bubble .text-muted {
+    color: #cbd5e1 !important;
+}
