@@ -5,8 +5,8 @@
   "type": "module",
   "main": "back/server.js",
   "scripts": {
-    "start": "node back/server.js",
-    "dev": "node back/server.js",
+    "start": "dotnet run --project back/back.csproj",
+    "dev": "dotnet run --project back/back.csproj",
     "build": "vite build",
     "vite:dev": "vite"
   },
