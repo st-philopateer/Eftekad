@@ -91,26 +91,13 @@ using (var scope = app.Services.CreateScope())
     context.Database.EnsureCreated();
     Console.WriteLine($"🔌 Database initialized at: {dbPath}");
 
-    // Seed Standard Stages
-    if (!context.StageLists.Any())
+    // Clean up old auto-seeded stages if they exist
+    var oldSeeded = context.StageLists.Where(s => s.Id != null && s.Id.StartsWith("stage_")).ToList();
+    if (oldSeeded.Any())
     {
-        var standardStages = new[]
-        {
-            new StageList { Id = "stage_1", Name = "اولي ابتدائي", Code = "1", Order = 1, PromotionType = "auto", AllowedTargetsJson = "[]" },
-            new StageList { Id = "stage_2", Name = "تانية ابتدائي", Code = "2", Order = 2, PromotionType = "auto", AllowedTargetsJson = "[]" },
-            new StageList { Id = "stage_3", Name = "تالتة ابتدائي", Code = "3", Order = 3, PromotionType = "auto", AllowedTargetsJson = "[]" },
-            new StageList { Id = "stage_4", Name = "رابعة ابتدائي", Code = "4", Order = 4, PromotionType = "auto", AllowedTargetsJson = "[]" },
-            new StageList { Id = "stage_5", Name = "خامسة ابتدائي", Code = "5", Order = 5, PromotionType = "auto", AllowedTargetsJson = "[]" },
-            new StageList { Id = "stage_6", Name = "سادسة ابتدائي", Code = "6", Order = 6, PromotionType = "auto", AllowedTargetsJson = "[]" },
-            new StageList { Id = "stage_7", Name = "أولى إعدادي", Code = "7", Order = 7, PromotionType = "auto", AllowedTargetsJson = "[]" },
-            new StageList { Id = "stage_8", Name = "تانية إعدادي", Code = "8", Order = 8, PromotionType = "auto", AllowedTargetsJson = "[]" },
-            new StageList { Id = "stage_9", Name = "تالتة إعدادي", Code = "9", Order = 9, PromotionType = "auto", AllowedTargetsJson = "[]" },
-            new StageList { Id = "stage_10", Name = "أولى ثانوي", Code = "10", Order = 10, PromotionType = "auto", AllowedTargetsJson = "[]" },
-            new StageList { Id = "stage_11", Name = "تانية ثانوي", Code = "11", Order = 11, PromotionType = "auto", AllowedTargetsJson = "[]" },
-            new StageList { Id = "stage_12", Name = "تالتة ثانوي", Code = "12", Order = 12, PromotionType = "auto", AllowedTargetsJson = "[]" }
-        };
-        context.StageLists.AddRange(standardStages);
-        Console.WriteLine("✅ Initial database stages auto-seeded successfully!");
+        context.StageLists.RemoveRange(oldSeeded);
+        context.SaveChanges();
+        Console.WriteLine("🧹 Cleaned up old auto-seeded stages.");
     }
 
     // Seed Default Super Admin Account (from db.json specs)

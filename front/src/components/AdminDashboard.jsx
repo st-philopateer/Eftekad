@@ -2300,7 +2300,7 @@ export default function AdminDashboard() {
                               </div>
                             </div>
                             <div className="table-responsive" style={{ maxHeight: '600px' }}>
-                              <table className="table align-middle">
+                              <table className="table align-middle text-nowrap">
                                 <thead>
                                   <tr style={{ color: '#c9a84c' }}>
                                     <th>الاسم رباعي</th>
